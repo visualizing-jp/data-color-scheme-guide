@@ -21,7 +21,7 @@ const VERDICT = {
 };
 const CLASSES = { aged65: { count: 5, decimals: 1 }, popChange: { count: 5, decimals: 2 } };
 const DIVERGING_CLASSES = 7;
-const NOTE = 'データ：総務省統計局『人口推計（2024年10月1日現在）』。人口増減率は2023年10月から2024年10月までの1年間。地方区分は一般的な八地方区分。';
+const NOTE = 'データ：総務省統計局『人口推計（2024年10月1日現在）』。人口増減率は2023年10月から2024年9月までの1年間。地方区分は一般的な八地方区分。';
 
 /**
  * @param {HTMLElement} el マウント点
