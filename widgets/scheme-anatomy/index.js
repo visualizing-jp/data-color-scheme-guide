@@ -102,8 +102,23 @@ export function mount(el, { d3, color, palettes }) {
   const cvdText = h('p', { class: 'scheme-anatomy__cvd', 'aria-live': 'polite', 'aria-atomic': 'true' });
   const svgHost = h('div', { class: 'scheme-anatomy__plot' });
 
+  // aria-live の領域は、内容が変わったときだけ書き換える。スライダーを動かしている間は、止まって300ミリ秒たってから書き換える。
+  const LIVE_DELAY = 300;
+  const live = new Map(); // 要素 → { key（いま表示している内容）, timer }
+  function setLive(target, key, build, { defer = false } = {}) {
+    const entry = live.get(target) ?? { key: null, timer: 0 };
+    live.set(target, entry);
+    clearTimeout(entry.timer);
+    if (key === entry.key) return;
+    const write = () => {
+      entry.key = key;
+      target.replaceChildren(...build());
+    };
+    if (defer) entry.timer = setTimeout(write, LIVE_DELAY); else write();
+  }
+
   el.replaceChildren(
-    h('p', { class: 'fig-title' }, 'スキームの中身を、明度で見る'),
+    h('p', { class: 'fig-title' }, 'スキーム解剖：スキームの中身を、明度で見る'),
     h('div', { class: 'ctl' }, [
       h('span', { class: 'scheme-anatomy__ctl-label', id: `${groupName}-label` }, 'スキーム'),
       segment,
@@ -152,7 +167,7 @@ export function mount(el, { d3, color, palettes }) {
     output.textContent = String(mem.n);
   }
 
-  function renderChart() {
+  function renderChart({ defer = false } = {}) {
     const { id, n } = memory[state.type];
     const info = infoOf();
     const colors = palettes.get(id, n);
@@ -220,19 +235,22 @@ export function mount(el, { d3, color, palettes }) {
       .text('色の並び順');
 
     // 文
-    shapeText.textContent = describeShape(state.type, shape);
+    const shapeSentence = describeShape(state.type, shape);
+    setLive(shapeText, shapeSentence, () => [shapeSentence], { defer });
     const safe = palettes.isColorblindSafe(id, n);
     const okabe = id === 'OkabeIto';
-    const word = safe ? '見分けやすい' : '見分けにくい';
+    // 判定の段階は「見分けやすい」（good）か「条件つき」（caution）。後者の語は、文の頭に判定の語として入れる。
+    const word = safe ? '見分けやすい' : '条件つき';
     const sentence = okabe
       ? '色覚に配慮して作られたパレットです'
       : safe
         ? 'この色の数では、色覚のタイプが違っても見分けやすいとされています'
-        : 'この色の数では、見分けにくい色の組が含まれます';
-    cvdText.replaceChildren(
+        : 'この色の数では、色覚のタイプによって見分けにくい組が含まれるとされています';
+    const source = okabe ? '（出典：Okabe–Ito）' : '（ColorBrewer の判定）';
+    setLive(cvdText, `${safe}|${sentence}|${source}`, () => [
       h('span', { class: `verdict verdict--${safe ? 'good' : 'caution'}` }, `${word}：${sentence}`),
-      h('span', { class: 'scheme-anatomy__source' }, okabe ? '（出典：Okabe–Ito）' : '（出典：ColorBrewer の判定）'),
-    );
+      h('span', { class: 'scheme-anatomy__source' }, source),
+    ], { defer });
   }
 
   function render() {
@@ -254,7 +272,7 @@ export function mount(el, { d3, color, palettes }) {
   const onSlider = () => {
     memory[state.type].n = Number(slider.value);
     output.textContent = slider.value;
-    renderChart();
+    renderChart({ defer: true });
   };
   const onToggle = () => { state.gray = toggle.checked; renderChart(); };
   segment.addEventListener('change', onSegment);
@@ -275,6 +293,7 @@ export function mount(el, { d3, color, palettes }) {
   return {
     destroy() {
       observer?.disconnect();
+      for (const entry of live.values()) clearTimeout(entry.timer);
       segment.removeEventListener('change', onSegment);
       select.removeEventListener('change', onSelect);
       slider.removeEventListener('input', onSlider);

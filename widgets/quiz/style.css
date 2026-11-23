@@ -65,19 +65,6 @@
 
 .quiz__actions { margin-top: var(--s-4); }
 
-.quiz__btn {
-  min-height: 44px;
-  padding: 0.45em 1.4em;
-  border: 1px solid var(--c-ink);
-  border-radius: var(--radius);
-  background: var(--c-ink);
-  color: var(--c-on-ink);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-.quiz__btn:hover { background: var(--c-text-2); }
-
 .quiz__score { margin: 0 0 var(--s-3); font-size: 1.25rem; font-weight: 700; line-height: 1.5; }
 .quiz__score:focus { outline: none; }
 .quiz__score:focus-visible { outline: 3px solid var(--c-ink); outline-offset: 4px; }

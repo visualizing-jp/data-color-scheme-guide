@@ -91,7 +91,8 @@ a:hover { text-decoration-thickness: 2px; }
 .page-header,
 .toc,
 .page > section > h2,
-.prose {
+.prose,
+.prose-after {
   max-width: var(--w-prose);
   margin-inline: auto;
 }
@@ -126,12 +127,28 @@ a:hover { text-decoration-thickness: 2px; }
 }
 .page > section > h2 + .prose { margin-top: 0; }
 
-.prose p { margin: 0 0 1.2em; }
-.prose h3 { font-size: 1.15rem; line-height: 1.5; margin: 2em 0 0.6em; }
-.prose ul, .prose ol { padding-left: 1.5em; margin: 0 0 1.2em; }
-.prose li { margin-block: 0.3em; }
-.prose strong { font-weight: 700; }
-.prose small, .prose .small { color: var(--c-text-3); font-size: 0.85em; }
+/* .prose-after：図のあとに読ませる文章。<figure> の直後に置く。見た目は .prose と同じ。 */
+.prose p, .prose-after p { margin: 0 0 1.2em; }
+.prose h3, .prose-after h3 { font-size: 1.15rem; line-height: 1.5; margin: 2em 0 0.6em; }
+.prose ul, .prose ol, .prose-after ul, .prose-after ol { padding-left: 1.5em; margin: 0 0 1.2em; }
+.prose li, .prose-after li { margin-block: 0.3em; }
+.prose strong, .prose-after strong { font-weight: 700; }
+.prose small, .prose .small, .prose-after small, .prose-after .small { color: var(--c-text-3); font-size: 0.85em; }
+
+/* aside.note：補足の枠。本文より控えめに（小さめ・薄い面・細い罫線）。無彩色。 */
+aside.note {
+  margin: 0 0 1.4em;
+  padding: var(--s-3) var(--s-4);
+  background: var(--c-surface-2);
+  border-left: 3px solid var(--c-line-strong);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--c-text-2);
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+aside.note > :last-child { margin-bottom: 0; }
+aside.note p { margin: 0 0 0.8em; }
+aside.note ul { margin: 0 0 0.8em; padding-left: 1.4em; }
 
 /* --- 図（ウィジェット）の枠 --------------------------------------------- */
 
@@ -179,6 +196,13 @@ figure.widget > * { min-width: 0; }
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.5;
+}
+.fig-subtitle {
+  margin: var(--s-4) 0 var(--s-2);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--c-text-2);
 }
 .fig-note {
   margin: var(--s-3) 0 0;
@@ -291,6 +315,62 @@ figure.widget > * { min-width: 0; }
   margin: 0;
   accent-color: var(--c-ink);
   cursor: pointer;
+}
+
+/* .ctl-button：図の中のボタン。主要な操作には .ctl-button--primary を重ねる。
+   <button type="button" class="ctl-button">…</button> */
+.ctl-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.45em 1.1em;
+  border: 1px solid var(--c-line-strong);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  cursor: pointer;
+}
+.ctl-button:hover:not(:disabled) { background: var(--c-surface-2); }
+.ctl-button:disabled { color: var(--c-text-3); cursor: not-allowed; }
+.ctl-button--primary {
+  background: var(--c-ink);
+  border-color: var(--c-ink);
+  color: var(--c-on-ink);
+  font-weight: 700;
+}
+.ctl-button--primary:hover:not(:disabled) { background: var(--c-text-2); border-color: var(--c-text-2); }
+.ctl-button--primary:disabled { background: var(--c-text-3); border-color: var(--c-text-3); color: var(--c-on-ink); }
+
+/* 幅の狭い画面：指で押しやすい大きさ（押せる範囲の高さ 44px 以上） */
+@media (max-width: 600px) {
+  .ctl-segment > label > span { min-height: 44px; display: flex; align-items: center; justify-content: center; }
+  .ctl-button { min-height: 44px; }
+  .ctl-toggle { min-height: 44px; }
+  .ctl-toggle input { width: 24px; height: 24px; }
+  .ctl-slider input[type="range"] { height: 44px; }
+  /* つまみを大きくするには、標準の見た目をやめて、溝とつまみを自前で描く */
+  .ctl-slider input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
+  .ctl-slider input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px; border-radius: 3px; background: var(--c-line-strong);
+  }
+  .ctl-slider input[type="range"]::-moz-range-track {
+    height: 6px; border-radius: 3px; background: var(--c-line-strong);
+  }
+  .ctl-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 28px; height: 28px; margin-top: -11px;
+    border: 2px solid var(--c-surface); border-radius: 50%; background: var(--c-ink);
+    box-shadow: 0 0 0 1px var(--c-ink);
+  }
+  .ctl-slider input[type="range"]::-moz-range-thumb {
+    width: 24px; height: 24px; box-sizing: content-box;
+    border: 2px solid var(--c-surface); border-radius: 50%; background: var(--c-ink);
+    box-shadow: 0 0 0 1px var(--c-ink);
+  }
 }
 
 /* --- 判定表示（無彩色。記号と枠線の太さで区別する） ----------------------- */

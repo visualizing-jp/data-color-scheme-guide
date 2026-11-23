@@ -21,7 +21,10 @@ const VERDICT = {
 };
 const CLASSES = { aged65: { count: 5, decimals: 1 }, popChange: { count: 5, decimals: 2 } };
 const DIVERGING_CLASSES = 7;
-const NOTE = 'データ：総務省統計局『人口推計（2024年10月1日現在）』。人口増減率は2023年10月から2024年9月までの1年間。地方区分は一般的な八地方区分。';
+const NOTE = '出典：総務省統計局『人口推計（2024年10月1日現在）』をもとに加工して作成。人口増減率は2023年10月〜2024年9月の1年間。地方区分は一般的な八地方区分。';
+/** ラベル（地図に重ねる県名）を置く側。秋田は西（日本海）側、東京は南側が空いている。 */
+const CALLOUT_SIDE = { '05': 'left', '13': 'below' };
+const DEFAULT_INFO = 'マスに触れると、県名と値が出ます。キーボードは、地図に入って矢印キーで動かします。';
 
 /**
  * @param {HTMLElement} el マウント点
@@ -60,6 +63,7 @@ export async function mount(el, { palettes, prefectures, tilemap }) {
       return {
         fill: (p) => colors[regionIndex.get(p.region)],
         legend: prefectures.regions.map((r, i) => ({ color: colors[i], label: r.name })),
+        callouts: [],
       };
     }
     const domain = domainOf(data);
@@ -82,7 +86,25 @@ export async function mount(el, { palettes, prefectures, tilemap }) {
       else label = `${fmt(s.thresholds[i - 1])}〜${fmt(s.thresholds[i])}`;
       return { color, label, hint: i === centerIndex ? 'ゼロ付近' : null };
     });
-    return { fill: (p) => s.color(p[data]), legend };
+    return { fill: (p) => s.color(p[data]), legend, callouts: calloutPrefs(data, scheme, s, centerIndex) };
+  }
+
+  /**
+   * 県名のラベルを出す県。スマホでは県名がマスに出ないので、読み取りの手がかりになる県だけに名前を添える。
+   * - 人口増減率 × 分岐的：青の側の色になる県（1マスしかない）。
+   * - 65歳以上人口の割合 × 連続的：最も濃い階級の最大値の県（秋田）と、最も淡い階級の最小値の県（東京）。
+   */
+  function calloutPrefs(data, scheme, s, centerIndex) {
+    if (data === 'popChange' && scheme === 'diverging') {
+      const blue = list.filter((p) => s.index(p[data]) > centerIndex);
+      return blue.length <= 2 ? blue : [];
+    }
+    if (data === 'aged65' && scheme === 'sequential') {
+      const top = list.reduce((a, b) => (b[data] > a[data] ? b : a));
+      const bottom = list.reduce((a, b) => (b[data] < a[data] ? b : a));
+      return [top, bottom];
+    }
+    return [];
   }
 
   // --- 操作部品 ---------------------------------------------------------
@@ -111,7 +133,7 @@ export async function mount(el, { palettes, prefectures, tilemap }) {
         const { mark, word } = VERDICT[v.verdict];
         const button = h('button', {
           type: 'button',
-          class: 'scheme-matrix__cell',
+          class: 'ctl-button scheme-matrix__cell',
           'data-data': d.id,
           'data-scheme': s.id,
           'aria-pressed': false,
@@ -140,119 +162,47 @@ export async function mount(el, { palettes, prefectures, tilemap }) {
   const verdictBox = h('div', { class: 'scheme-matrix__verdict', 'aria-live': 'polite', 'aria-atomic': 'true' });
 
   el.replaceChildren(
-    h('p', { class: 'fig-title' }, 'データとスキームの組み合わせを試す'),
+    h('p', { class: 'fig-title' }, 'データ×スキーム対応表：組み合わせを試す'),
     h('div', { class: 'ctl scheme-matrix__ctl' }, [dataGroup, schemeGroup]),
+    // 並びは、狭い幅の読む順（操作部品 → 9通りの一覧 → 判定と理由 → 地図 → 凡例）。広い幅では css で左右に分ける
     h('div', { class: 'scheme-matrix__body' }, [
       h('div', { class: 'scheme-matrix__matrix' }, matrix),
-      h('div', { class: 'scheme-matrix__mapwrap' }, [mapHost, info, legend]),
       verdictBox,
+      h('div', { class: 'scheme-matrix__mapwrap' }, [mapHost, info, legend]),
     ]),
     h('p', { class: 'fig-note' }, NOTE),
   );
 
   // --- 地図 -------------------------------------------------------------
+  // マスの操作（ホバー、タップ、矢印キー、フォーカスの枠）は tilemap.render の onActive に任せる。
+  // 選んでいるマスには、tilemap の印（mark）を付ける。
   let paint = coloring(state.data, state.scheme);
+  const tileLabel = (pref) => `${pref.name}：${valueText(pref, state.data)}`;
   const map = tilemap.render(mapHost, {
     prefectures,
     fill: paint.fill,
     labels: 'auto',
     ariaLabel: '都道府県を1県1マスで並べたタイル地図。選んだデータとスキームで塗り分けています。',
+    tileLabel,
+    onActive: (pref) => {
+      state.active = pref ? pref.code : null;
+      renderActive();
+    },
   });
-  const svg = mapHost.querySelector('svg');
-  const rects = new Map([...svg.querySelectorAll('rect[data-code]')].map((r) => [r.dataset.code, r]));
-
-  // 選んでいるマスの印（白の縁と濃い縁の二重線）。塗りの色によらず見える。
-  const SVG_NS = 'http://www.w3.org/2000/svg';
-  const cursor = document.createElementNS(SVG_NS, 'g');
-  cursor.setAttribute('pointer-events', 'none');
-  cursor.setAttribute('display', 'none');
-  for (const [stroke, width] of [['#ffffff', 6], ['#262626', 3]]) {
-    const r = document.createElementNS(SVG_NS, 'rect');
-    r.setAttribute('fill', 'none');
-    r.setAttribute('stroke', stroke);
-    r.setAttribute('stroke-width', String(width));
-    cursor.append(r);
-  }
-  svg.append(cursor);
-
-  // キーボード：地図に入る Tab は1つだけ（roving tabindex）。矢印キーでマスを移る。
-  let tabCode = list[0].code;
-  for (const [code, rect] of rects) {
-    rect.setAttribute('role', 'img');
-    rect.setAttribute('tabindex', code === tabCode ? '0' : '-1');
-  }
-
-  function setActive(code, { focus = false } = {}) {
-    state.active = code;
-    if (code) {
-      if (tabCode !== code) {
-        rects.get(tabCode)?.setAttribute('tabindex', '-1');
-        rects.get(code).setAttribute('tabindex', '0');
-        tabCode = code;
-      }
-      if (focus) rects.get(code).focus({ preventScroll: false });
-    }
-    renderActive();
-  }
 
   function renderActive() {
     const pref = state.active ? prefByCode.get(state.active) : null;
-    if (!pref) {
-      cursor.setAttribute('display', 'none');
-      info.replaceChildren('マスに触れると、県名と値が出ます。キーボードは、地図に入って矢印キーで動かします。');
-      return;
-    }
-    const pos = tilemap.tileRect(pref.x, pref.y);
-    for (const r of cursor.children) {
-      r.setAttribute('x', String(pos.x));
-      r.setAttribute('y', String(pos.y));
-      r.setAttribute('width', String(pos.size));
-      r.setAttribute('height', String(pos.size));
-    }
-    cursor.removeAttribute('display');
-    info.replaceChildren(h('strong', {}, pref.name), `：${valueText(pref, state.data)}`);
+    map.mark(pref ? [pref.code] : []);
+    if (pref) info.replaceChildren(h('strong', {}, pref.name), `：${valueText(pref, state.data)}`);
+    else info.replaceChildren(DEFAULT_INFO);
   }
-
-  const codeOf = (target) => (target instanceof Element ? target.closest('[data-code]')?.dataset.code : null);
-  const onOver = (event) => { const code = codeOf(event.target); if (code) setActive(code); };
-  const onDown = (event) => { const code = codeOf(event.target); if (code) setActive(code); };
-  const onFocusIn = (event) => { const code = codeOf(event.target); if (code) setActive(code); };
-  const onLeave = (event) => {
-    if (event.pointerType && event.pointerType !== 'mouse') return; // タップした県は残す
-    const focused = codeOf(document.activeElement);
-    setActive(focused && svg.contains(document.activeElement) ? focused : null);
-  };
-  const onKey = (event) => {
-    const delta = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key];
-    const code = codeOf(event.target);
-    if (!delta || !code) return;
-    const cur = prefByCode.get(code);
-    let best = null;
-    let bestScore = Infinity;
-    for (const p of list) {
-      const dx = (p.x - cur.x) * delta[0];
-      const dy = (p.y - cur.y) * delta[1];
-      const along = delta[0] !== 0 ? dx : dy;
-      if (along <= 0) continue;
-      const across = delta[0] !== 0 ? Math.abs(p.y - cur.y) : Math.abs(p.x - cur.x);
-      const score = along * 3 + across;
-      if (score < bestScore) { bestScore = score; best = p; }
-    }
-    event.preventDefault();
-    if (best) setActive(best.code, { focus: true });
-  };
-  svg.addEventListener('pointerover', onOver);
-  svg.addEventListener('pointerdown', onDown);
-  svg.addEventListener('pointerleave', onLeave);
-  svg.addEventListener('focusin', onFocusIn);
-  svg.addEventListener('keydown', onKey);
 
   // --- 描画 -------------------------------------------------------------
   function render() {
     const { data, scheme } = state;
     paint = coloring(data, scheme);
-    map.update({ fill: paint.fill });
-    for (const pref of list) rects.get(pref.code).setAttribute('aria-label', `${pref.name}：${valueText(pref, data)}`);
+    map.update({ fill: paint.fill, tileLabel });
+    map.callouts(paint.callouts.map((pref) => ({ code: pref.code, text: pref.short, side: CALLOUT_SIDE[pref.code] ?? 'below' })));
     renderActive();
 
     legend.replaceChildren(...paint.legend.map((item) =>
@@ -266,6 +216,10 @@ export async function mount(el, { palettes, prefectures, tilemap }) {
       input.checked = input.value === (input.name === dataName ? data : scheme);
     }
 
+    // aria-live の領域は、組み合わせが変わったときだけ書き換える（同じ組み合わせを押し直しても読み上げない）
+    const key = `${data}/${scheme}`;
+    if (key === shownVerdict) return;
+    shownVerdict = key;
     const v = verdictOf(data, scheme);
     const { word } = VERDICT[v.verdict];
     verdictBox.replaceChildren(
@@ -273,6 +227,7 @@ export async function mount(el, { palettes, prefectures, tilemap }) {
       h('p', { class: 'scheme-matrix__reason' }, v.reason),
     );
   }
+  let shownVerdict = null;
 
   // --- イベント ---------------------------------------------------------
   const onChange = (event) => {
@@ -292,18 +247,12 @@ export async function mount(el, { palettes, prefectures, tilemap }) {
   el.addEventListener('change', onChange);
   matrix.addEventListener('click', onCell);
 
-  renderActive();
   render();
 
   return {
     destroy() {
       el.removeEventListener('change', onChange);
       matrix.removeEventListener('click', onCell);
-      svg.removeEventListener('pointerover', onOver);
-      svg.removeEventListener('pointerdown', onDown);
-      svg.removeEventListener('pointerleave', onLeave);
-      svg.removeEventListener('focusin', onFocusIn);
-      svg.removeEventListener('keydown', onKey);
       map.destroy();
       el.replaceChildren();
     },

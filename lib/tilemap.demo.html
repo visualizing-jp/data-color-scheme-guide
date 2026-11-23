@@ -11,12 +11,14 @@
   <main class="page">
     <!-- lib/tilemap.js の単体確認用。data/prefectures.json は使わず、座標を確定した確認用データをこのページに持たせている。 -->
     <figure class="widget" id="app">
-      <p class="fig-title">タイル地図の確認：塗りを切り替える（update）</p>
+      <p class="fig-title">タイル地図の確認：塗りを切り替える（update）、触れた県を知らせる（onActive）、印を付ける（mark）</p>
       <div class="ctl">
         <div class="ctl-segment" id="fills" role="radiogroup" aria-label="塗り方"></div>
         <div class="ctl-segment" id="label-modes" role="radiogroup" aria-label="県名の表示"></div>
+        <button class="ctl-button" id="mark-toggle" type="button" aria-pressed="false">東京都・大阪府・沖縄県に印を付ける</button>
       </div>
       <div id="map"></div>
+      <p id="active" style="margin:8px 0 0">マスに触れるか、地図に Tab で入って矢印キーで動かすと、ここに県名が出ます。</p>
       <p class="fig-note" id="note"></p>
     </figure>
   </main>
@@ -79,11 +81,28 @@
     let labelMode = 'auto';
     const labelsOption = () => (labelMode === 'auto' ? 'auto' : labelMode === 'true');
 
+    const MARKED = ['13', '27', '47'];
+    let marked = false;
+    const activeNote = document.getElementById('active');
     function draw() {
       map?.destroy();
-      map = render(host, { prefectures, fill: fillFn, labels: labelsOption(), ariaLabel: '地方ごとにグレーの濃さを変えた、都道府県のタイル地図' });
-      note.textContent = `47 マス。labels = ${labelMode}。塗りの切り替えは update()、県名の表示の切り替えは render() をやり直している。`;
+      map = render(host, {
+        prefectures,
+        fill: fillFn,
+        labels: labelsOption(),
+        ariaLabel: '地方ごとにグレーの濃さを変えた、都道府県のタイル地図',
+        initialCode: '01',
+        onActive: (pref) => { activeNote.textContent = pref ? `${pref.name}（${pref.code}）` : 'マスに触れるか、地図に Tab で入って矢印キーで動かすと、ここに県名が出ます。'; },
+      });
+      if (marked) { map.mark(MARKED); map.callouts([{ code: '13', text: '東京都', side: 'below' }, { code: '47', text: '沖縄県', side: 'right' }]); }
+      note.textContent = `47 マス。labels = ${labelMode}。塗りの切り替えは update()、県名の表示の切り替えは render() をやり直している。印は mark()、重ねたラベルは callouts()。`;
     }
+    document.getElementById('mark-toggle').addEventListener('click', (event) => {
+      marked = !marked;
+      event.currentTarget.setAttribute('aria-pressed', String(marked));
+      map.mark(marked ? MARKED : []);
+      map.callouts(marked ? [{ code: '13', text: '東京都', side: 'below' }, { code: '47', text: '沖縄県', side: 'right' }] : []);
+    });
     document.getElementById('fills').addEventListener('change', (event) => {
       fillFn = FILLS.find(([value]) => value === event.target.value)[2];
       map.update({ fill: fillFn }); // マスは作り直さず、色と文字色だけを差し替える

@@ -53,6 +53,27 @@ test('章と図のマウント点が約束どおり並んでいる', () => {
   }
 });
 
+test('各図に id="fig-名前" があり、各 prose-after は対応する図の直後にある', () => {
+  const text = html.replace(/<!--[\s\S]*?-->/g, '');
+  for (const m of text.matchAll(/<figure\b[^>]*\bdata-widget="([^"]+)"[^>]*>/g)) {
+    assert.match(m[0], new RegExp(`\\bid="fig-${m[1]}"`), `図「${m[1]}」に id="fig-${m[1]}" がない`);
+  }
+  const afters = [...text.matchAll(/<div class="prose-after" data-after="([^"]+)">/g)];
+  assert.ok(afters.length > 0, 'prose-after が1つもない');
+  for (const m of afters) {
+    const before = text.slice(0, m.index).trimEnd();
+    assert.ok(
+      before.endsWith(`data-widget="${m[1]}" id="fig-${m[1]}"></figure>`),
+      `prose-after「${m[1]}」が、図「${m[1]}」の直後にない`,
+    );
+  }
+  // 図の前の本文（data-prose）の中に prose-after が残っていない
+  for (const { id, body } of topLevelSections(html)) {
+    const prose = /<div class="prose" data-prose="[^"]+">([\s\S]*?)\n      <\/div>/.exec(body)?.[1] ?? '';
+    assert.ok(!prose.includes('prose-after'), `${id} の本文（data-prose）の中に prose-after が残っている`);
+  }
+});
+
 test('本文の中に入れ子の <section> があっても、章の構造を読み違えない', () => {
   const sample = `<section id="a"><h2>A</h2><div class="prose" data-prose="a"><section><h3>x</h3></section></div>
     <figure data-widget="w"></figure></section><!-- <section id="c"> --><section id="b"></section>`;
