@@ -1,0 +1,337 @@
+/* ==========================================================================
+   base.css — 色・余白のトークン、本文の組み、図で共通の操作部品
+   ページのUIは無彩色（グレーの濃淡）だけで作る。色は図の中にだけ登場させる。
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* 無彩色のトークン（R=G=B） */
+  --c-bg: #f7f7f7;         /* わずかに灰色がかった白 */
+  --c-surface: #ffffff;    /* 図・部品の面 */
+  --c-surface-2: #efefef;  /* 一段くぼんだ面 */
+  --c-text: #262626;       /* 本文：濃いグレー */
+  --c-text-2: #4d4d4d;     /* 補助の文字 */
+  --c-text-3: #6b6b6b;     /* 注記（背景に対して 4.5:1 以上） */
+  --c-line: #d9d9d9;       /* 細い罫線 */
+  --c-line-strong: #8c8c8c;/* 操作部品の枠 */
+  --c-ink: #262626;        /* 選択状態の塗り・フォーカス */
+  --c-on-ink: #ffffff;
+
+  /* 余白（4px 刻み） */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 40px;
+  --s-7: 64px;
+
+  /* 幅 */
+  --w-prose: 720px;
+  --w-fig: 960px;
+  --gutter: 16px;
+
+  --radius: 6px;
+  --font-sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", "Meiryo",
+    "Noto Sans CJK JP", "Noto Sans JP", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* --- リセットと土台 ------------------------------------------------------ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--s-5);
+}
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;      /* 長い語でスマホの横スクロールを出さない */
+  line-break: strict;
+}
+
+img, svg, canvas, video { max-width: 100%; }
+svg { height: auto; }
+
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible { outline: 3px solid var(--c-ink); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* --- ページの組み -------------------------------------------------------- */
+
+.page {
+  width: 100%;
+  max-width: calc(var(--w-fig) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding: var(--s-6) var(--gutter) var(--s-7);
+}
+
+.page-header,
+.toc,
+.page > section > h2,
+.prose {
+  max-width: var(--w-prose);
+  margin-inline: auto;
+}
+
+.page-header { padding-block: var(--s-5) var(--s-4); }
+.page-header h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 5.5vw, 2.4rem);
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+.page-header .lead { margin: var(--s-3) 0 0; color: var(--c-text-2); }
+
+.toc {
+  margin-block: var(--s-4) var(--s-6);
+  padding: var(--s-4) var(--s-5);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+}
+.toc__title { margin: 0 0 var(--s-2); font-size: 0.9rem; font-weight: 700; color: var(--c-text-2); }
+.toc ol { margin: 0; padding-left: 1.6em; line-height: 1.7; }
+.toc li { margin-block: var(--s-2); }
+
+.page > section { padding-top: var(--s-6); }
+.page > section > h2 {
+  font-size: clamp(1.3rem, 4.2vw, 1.7rem);
+  line-height: 1.45;
+  padding-bottom: var(--s-2);
+  border-bottom: 2px solid var(--c-ink);
+  margin-block: 0 var(--s-5);
+}
+.page > section > h2 + .prose { margin-top: 0; }
+
+.prose p { margin: 0 0 1.2em; }
+.prose h3 { font-size: 1.15rem; line-height: 1.5; margin: 2em 0 0.6em; }
+.prose ul, .prose ol { padding-left: 1.5em; margin: 0 0 1.2em; }
+.prose li { margin-block: 0.3em; }
+.prose strong { font-weight: 700; }
+.prose small, .prose .small { color: var(--c-text-3); font-size: 0.85em; }
+
+/* --- 図（ウィジェット）の枠 --------------------------------------------- */
+
+figure.widget {
+  max-width: var(--w-fig);
+  margin: var(--s-6) auto;
+  padding: var(--s-5);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  line-height: 1.6;
+  font-size: 15px;
+  min-width: 0;
+}
+figure.widget > * { min-width: 0; }
+
+.widget-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  padding: var(--s-5);
+  border: 2px dashed var(--c-line-strong);
+  border-radius: var(--radius);
+  background: var(--c-surface-2);
+  color: var(--c-text-2);
+  text-align: center;
+}
+.widget-error {
+  padding: var(--s-4);
+  border: 3px solid var(--c-ink);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+}
+
+@media (max-width: 600px) {
+  body { font-size: 16px; }
+  figure.widget { padding: var(--s-3); margin-block: var(--s-5); }
+  .toc { padding: var(--s-3) var(--s-4); }
+}
+
+/* --- 図の見出し・注記 ---------------------------------------------------- */
+
+.fig-title {
+  margin: 0 0 var(--s-3);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.fig-note {
+  margin: var(--s-3) 0 0;
+  color: var(--c-text-3);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+/* --- 操作部品 ------------------------------------------------------------ */
+
+/* .ctl：操作部品を横にまとめる行（収まらなければ折り返す） */
+.ctl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-5);
+  margin-block: var(--s-3);
+}
+
+/* .ctl-slider：ラベル + <input type="range"> + 値表示
+   <div class="ctl-slider"><label for="x">…</label><input id="x" type="range"><output for="x">…</output></div> */
+.ctl-slider {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) minmax(2.5em, auto);
+  align-items: center;
+  gap: var(--s-3);
+  flex: 1 1 280px;
+  min-width: 0;
+}
+.ctl-slider > label { font-weight: 600; font-size: 0.9rem; }
+.ctl-slider > output {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  font-size: 0.9rem;
+  color: var(--c-text-2);
+}
+.ctl-slider input[type="range"] {
+  width: 100%;
+  min-width: 0;
+  height: 28px;           /* タップしやすい高さ */
+  margin: 0;
+  accent-color: var(--c-ink);
+  cursor: pointer;
+}
+
+/* .ctl-segment：選択ボタンの組。ネイティブのラジオを使うので、矢印キーの移動はブラウザ任せ。
+   <div class="ctl-segment" role="radiogroup" aria-label="…">
+     <label><input type="radio" name="g" value="a" checked><span>A</span></label> … </div> */
+.ctl-segment {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--c-line-strong);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  overflow: hidden;
+}
+.ctl-segment > label { position: relative; display: block; margin: 0; }
+.ctl-segment > label + label { border-left: 1px solid var(--c-line-strong); }
+.ctl-segment input[type="radio"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;             /* 見えないが、フォーカスとキー操作は生きている */
+  cursor: pointer;
+}
+.ctl-segment > label > span {
+  display: block;
+  min-height: 40px;
+  padding: 0.45em 1em;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  text-align: center;
+  color: var(--c-text);
+  user-select: none;
+}
+.ctl-segment input:checked + span {
+  background: var(--c-ink);
+  color: var(--c-on-ink);
+  font-weight: 700;
+}
+.ctl-segment input:focus-visible + span {
+  outline: 3px solid var(--c-ink);
+  outline-offset: -5px;
+  box-shadow: inset 0 0 0 2px var(--c-surface);
+}
+.ctl-segment input:not(:checked):hover + span { background: var(--c-surface-2); }
+.ctl-segment input:disabled + span { color: var(--c-text-3); cursor: not-allowed; }
+
+/* .ctl-toggle：チェックボックスの切り替え
+   <label class="ctl-toggle"><input type="checkbox"><span>…</span></label> */
+.ctl-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 40px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.ctl-toggle input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--c-ink);
+  cursor: pointer;
+}
+
+/* --- 判定表示（無彩色。記号と枠線の太さで区別する） ----------------------- */
+
+.verdict {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+  padding: 0.25em 0.8em;
+  border: 1px solid var(--c-ink);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.verdict::before { font-weight: 700; }
+.verdict--good    { border-width: 1px; }
+.verdict--caution { border-width: 2px; }
+.verdict--bad     { border-width: 4px; }
+.verdict--good::before    { content: "○"; content: "○" / ""; }
+.verdict--caution::before { content: "△"; content: "△" / ""; }
+.verdict--bad::before     { content: "×"; content: "×" / ""; }
+
+/* --- 色見本・凡例 -------------------------------------------------------- */
+
+.swatch {
+  display: inline-block;
+  flex: none;
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: middle;
+  background: var(--swatch, transparent);   /* style="--swatch:#rrggbb" か background で色を付ける */
+  border: 1px solid rgba(0, 0, 0, 0.35);    /* 白に近い色も見えるようにする */
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-4);
+  margin: var(--s-3) 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+.legend > li, .legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
