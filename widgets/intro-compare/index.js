@@ -55,7 +55,7 @@ export function mount(el, { palettes, prefectures, tilemap }) {
     h('p', { class: 'intro-compare__lead' }, '左右は、65歳以上人口の割合の同じデータです。違うのは、色の付け方だけです。'),
     h('div', { class: 'intro-compare__maps' }, panels.map((p) => p.panel)),
     info,
-    h('p', { class: 'intro-compare__question' }, '割合がいちばん高い県と、いちばん低い県は、どこでしょう。まず配色Aで探してみてください。'),
+    h('p', { class: 'intro-compare__question' }, '割合がいちばん高い都道府県と、いちばん低い都道府県は、どこでしょう。まず配色Aで探してみてください。'),
     h('div', { class: 'ctl' }, button),
     answer,
     h('p', { class: 'fig-note' }, '出典：総務省統計局『人口推計（2024年10月1日現在）』の65歳以上人口の割合をもとに加工して作成。'),
