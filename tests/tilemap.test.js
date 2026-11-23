@@ -1,7 +1,8 @@
-// lib/tilemap.js のうち、DOM を使わない部分（マスの位置、文字色の選択）の検査。
+// lib/tilemap.js のうち、DOM を使わない部分（マスの位置、文字色の選択、矢印キーの移動先、印の枠）の検査。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tileRect, viewBoxSize, relativeLuminance, labelColor, labelFontSize } from '../lib/tilemap.js';
+import { readFileSync } from 'node:fs';
+import { tileRect, viewBoxSize, relativeLuminance, labelColor, labelFontSize, nextTileCode, ringRects, ARROW_KEYS } from '../lib/tilemap.js';
 
 test('tileRect：座標から、隙間を空けた正方形のマスの位置を求める', () => {
   const origin = tileRect(0, 0);
@@ -86,4 +87,85 @@ test('labelFontSize：3 文字の県名がマスの幅の 8 割以内に収ま�
   assert.ok(Math.abs(f3 / size - 0.25) < 0.01);
   assert.ok(labelFontSize(2) === f3); // 2 文字でも大きくしない
   assert.ok(4 * labelFontSize(4) <= size * 0.8); // 長い略称は小さくする
+});
+
+// --- 矢印キーの移動先（nextTileCode）と、印の枠（ringRects） ---------------------------------
+
+const prefs = JSON.parse(readFileSync(new URL('../data/prefectures.json', import.meta.url), 'utf8')).prefectures;
+const code = (name) => prefs.find((p) => p.name === name).code;
+const nameOf = (c) => prefs.find((p) => p.code === c)?.name ?? null;
+const move = (from, key) => nameOf(nextTileCode(prefs, code(from), key));
+
+test('nextTileCode：まっすぐその向きにあるマスのうち、いちばん近いものへ移る', () => {
+  assert.equal(move('北海道', 'ArrowDown'), '青森県'); // 同じ列（x=12）の下
+  assert.equal(move('青森県', 'ArrowUp'), '北海道');
+  assert.equal(move('福岡県', 'ArrowRight'), '山口県'); // 同じ行（y=7）の右
+  assert.equal(move('山口県', 'ArrowLeft'), '福岡県');
+  assert.equal(move('長崎県', 'ArrowUp'), '佐賀県'); // 同じ列（x=0）の上
+  assert.equal(move('佐賀県', 'ArrowDown'), '長崎県');
+});
+
+test('nextTileCode：まっすぐのマスが遠くにあっても、斜めの近いマスより優先する', () => {
+  // 沖縄（0, 11）の真上は、2 マス空けた長崎（0, 8）。斜めには熊本（1, 8）などもある
+  assert.equal(move('沖縄県', 'ArrowUp'), '長崎県');
+});
+
+test('nextTileCode：まっすぐのマスがなければ、斜めのうちいちばん近いマスへ移る', () => {
+  // 北海道（12, 0）の左：同じ行にマスはない。秋田（11, 2）が、距離がいちばん近い（青森・岩手は左ではなく真下）
+  assert.equal(move('北海道', 'ArrowLeft'), '秋田県');
+  // 沖縄（0, 11）の右：同じ行にマスはない。右にあるマスのうち、最も近いのは鹿児島（1, 9）
+  assert.equal(move('沖縄県', 'ArrowRight'), '鹿児島県');
+});
+
+test('nextTileCode：その向きにマスが1つもなければ null（動かない）', () => {
+  assert.equal(nextTileCode(prefs, code('北海道'), 'ArrowUp'), null);
+  assert.equal(nextTileCode(prefs, code('北海道'), 'ArrowRight'), null);
+  assert.equal(nextTileCode(prefs, code('沖縄県'), 'ArrowDown'), null);
+  assert.equal(nextTileCode(prefs, code('沖縄県'), 'ArrowLeft'), null);
+});
+
+test('nextTileCode：向きは、キー名でも { dx, dy } でも指定できる。知らないキーや存在しないコードは null', () => {
+  assert.equal(nextTileCode(prefs, code('福岡県'), ARROW_KEYS.ArrowRight), code('山口県'));
+  assert.equal(nextTileCode(prefs, code('福岡県'), { dx: 1, dy: 0 }), code('山口県'));
+  assert.equal(nextTileCode(prefs, code('福岡県'), 'Enter'), null);
+  assert.equal(nextTileCode(prefs, '99', 'ArrowUp'), null);
+});
+
+test('nextTileCode：距離が同じなら、まっすぐな向きからのずれが小さいほう、それも同じならコードの小さいほうを選ぶ', () => {
+  const tiles = [
+    { code: '10', x: 5, y: 5 },
+    { code: '11', x: 7, y: 6 }, // 右へ 2、ずれ 1：距離 5
+    { code: '12', x: 6, y: 7 }, // 右へ 1、ずれ 2：距離 5（ずれが大きい）
+    { code: '13', x: 7, y: 4 }, // 右へ 2、ずれ 1：距離 5（11 と同じ）
+  ];
+  assert.equal(nextTileCode(tiles, '10', 'ArrowRight'), '11');
+});
+
+test('nextTileCode：どのマスからでも、4 方向に動いて全 47 マスに行き着ける', () => {
+  const seen = new Set([prefs[0].code]);
+  const queue = [prefs[0].code];
+  while (queue.length) {
+    const here = queue.pop();
+    for (const key of Object.keys(ARROW_KEYS)) {
+      const next = nextTileCode(prefs, here, key);
+      if (next && !seen.has(next)) { seen.add(next); queue.push(next); }
+    }
+  }
+  assert.equal(seen.size, 47);
+});
+
+test('ringRects：外側の濃いグレーの太い枠と、その内側の白い線が、マスの内側に収まる', () => {
+  const pos = tileRect(3, 2);
+  const [outer, inner] = ringRects(pos);
+  assert.equal(outer.stroke, '#262626');
+  assert.equal(inner.stroke, '#ffffff');
+  assert.ok(outer['stroke-width'] >= 3 && outer['stroke-width'] > inner['stroke-width']);
+  for (const r of [outer, inner]) {
+    // 線の外縁（中心線から線幅の半分）がマスの内側に収まる
+    const half = r['stroke-width'] / 2;
+    assert.ok(r.x - half >= pos.x - 1e-9 && r.y - half >= pos.y - 1e-9);
+    assert.ok(r.x + r.width + half <= pos.x + pos.size + 1e-9 && r.y + r.height + half <= pos.y + pos.size + 1e-9);
+  }
+  // 白い線は濃い枠の内側に接する
+  assert.ok(Math.abs(inner.x - inner['stroke-width'] / 2 - (outer.x + outer['stroke-width'] / 2)) < 1e-9);
 });
