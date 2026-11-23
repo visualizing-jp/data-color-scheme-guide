@@ -4,12 +4,12 @@ import { ensureStyle, el as h, uid } from '../../lib/dom.js';
 
 ensureStyle(new URL('./style.css', import.meta.url));
 
-/** 見え方の選択肢（操作部品のラベルは、ページ全体で「通常」「P型」「D型」「T型」）。 */
+/** 見え方の選択肢。label は文中での呼び名、cone は選択肢に添える、関わる錐体。 */
 const TYPES = [
-  { value: 'normal', label: '通常' },
-  { value: 'protan', label: 'P型' },
-  { value: 'deutan', label: 'D型' },
-  { value: 'tritan', label: 'T型' },
+  { value: 'normal', label: '通常', cone: null },
+  { value: 'protan', label: 'P型', cone: 'L錐体' },
+  { value: 'deutan', label: 'D型', cone: 'M錐体' },
+  { value: 'tritan', label: 'T型', cone: 'S錐体' },
 ];
 const TYPE_LABEL = Object.fromEntries(TYPES.map((t) => [t.value, t.label]));
 
@@ -20,6 +20,8 @@ const TYPE_LABEL = Object.fromEntries(TYPES.map((t) => [t.value, t.label]));
  */
 const THRESHOLD = 0.06;
 const SHRINK = 0.6;
+/** スライダーを止めてから、まとめの文を書き換えるまでの待ち時間（ミリ秒）。 */
+const LIVE_DELAY = 300;
 const HUE_STEP = 15;
 const HUE_COUNT = 360 / HUE_STEP;
 
@@ -46,9 +48,9 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
   const typeGroup = uid('cvd-simulator-type');
   const typeLabelId = uid('cvd-simulator-type-label');
   const typeSegment = h('div', { class: 'ctl-segment', role: 'radiogroup', 'aria-labelledby': typeLabelId },
-    TYPES.map(({ value, label }) => h('label', {}, [
+    TYPES.map(({ value, label, cone }) => h('label', {}, [
       h('input', { type: 'radio', name: typeGroup, value, checked: value === state.type }),
-      h('span', {}, label),
+      h('span', {}, cone ? [label, h('span', { class: 'cvd-simulator__cone' }, `（${cone}）`)] : label),
     ])));
 
   const sliderId = uid('cvd-simulator-severity');
@@ -88,6 +90,12 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
   }));
   const mapOriginal = h('div', { class: 'cvd-simulator__map' });
   const mapSim = h('div', { class: 'cvd-simulator__map' });
+  const readout = () => ({
+    swatch: h('span', { class: 'cvd-simulator__readout-sw', 'aria-hidden': 'true' }),
+    text: h('span', { class: 'cvd-simulator__readout-text' }),
+  });
+  const readouts = { original: readout(), sim: readout() };
+  const readoutBox = ({ swatch, text }) => h('p', { class: 'cvd-simulator__readout' }, [swatch, text]);
   const summary = h('p', { class: 'cvd-simulator__summary', 'aria-live': 'polite' });
 
   const strip = (caption, body) => h('div', { class: 'cvd-simulator__strip' }, [
@@ -95,15 +103,21 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
   ]);
 
   const root = h('div', { class: 'cvd-simulator' }, [
-    h('p', { class: 'fig-title' }, '見え方のちがいをシミュレーションする'),
+    h('p', { class: 'fig-title' }, '色覚シミュレータ：見え方のちがいを確かめる'),
     controls,
     h('div', { class: 'cvd-simulator__block' }, [
-      h('p', { class: 'cvd-simulator__block-title' }, '色相環（色相を15°ずつ、24色）'),
-      strip('もとの色', hueOriginal),
-      strip('シミュレーション後の色', hueSim),
+      h('p', { class: 'fig-subtitle cvd-simulator__block-title' }, '地方区分のタイル地図（選んでいる定性的パレットで塗り分け）'),
+      h('div', { class: 'cvd-simulator__maps' }, [
+        h('div', {}, [
+          h('p', { class: 'cvd-simulator__cap cvd-simulator__map-cap' }, 'もとの色'), mapOriginal, readoutBox(readouts.original),
+        ]),
+        h('div', {}, [
+          h('p', { class: 'cvd-simulator__cap cvd-simulator__map-cap' }, 'シミュレーション後の色'), mapSim, readoutBox(readouts.sim),
+        ]),
+      ]),
     ]),
     h('div', { class: 'cvd-simulator__block' }, [
-      h('p', { class: 'cvd-simulator__block-title' }, '3種類のカラースキーム'),
+      h('p', { class: 'fig-subtitle cvd-simulator__block-title' }, '3種類のカラースキーム（帯の下の数字は、左から数えた色の番号）'),
       ...schemeRows.map((row) => h('div', { class: 'cvd-simulator__scheme' }, [
         row.title,
         h('div', { class: 'cvd-simulator__scheme-body' }, [
@@ -116,16 +130,16 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
       ])),
     ]),
     h('div', { class: 'cvd-simulator__block' }, [
-      h('p', { class: 'cvd-simulator__block-title' }, '地方区分のタイル地図（選んでいる定性的パレットで塗り分け）'),
-      h('div', { class: 'cvd-simulator__maps' }, [
-        h('div', {}, [h('p', { class: 'cvd-simulator__cap cvd-simulator__map-cap' }, 'もとの色'), mapOriginal]),
-        h('div', {}, [h('p', { class: 'cvd-simulator__cap cvd-simulator__map-cap' }, 'シミュレーション後の色'), mapSim]),
-      ]),
+      h('p', { class: 'fig-subtitle cvd-simulator__block-title' }, '色相環（色相を15°ずつ、24色）'),
+      strip('もとの色', hueOriginal),
+      strip('シミュレーション後の色', hueSim),
     ]),
     summary,
     h('p', { class: 'fig-note' },
       'シミュレーションは Machado ほか（2009）の方法による目安です。実際の見え方には個人差があります。'
-      + '「見分けにくい組」は、シミュレーション後の色の差（OKLab 上の距離）が 0.06 未満で、もとの差の6割未満に縮んだ組です。'),
+      + 'T型の再現は、もとの方法が想定していない部分を含むため、特に粗い近似です。'
+      + '「見分けにくい組」は、シミュレーション後の色の差（OKLab 上の距離）が 0.06 未満で、もとの差の6割未満に縮んだ組です。'
+      + '「見分けにくい組」の基準は、このページで決めた目安です。'),
   ]);
   el.replaceChildren(root);
 
@@ -154,17 +168,23 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
     : `${TYPE_LABEL[state.type]}・強さ${state.severity}%`);
 
   // ---- 描画 -----------------------------------------------------------------
-  const band = (colors, label, flush) => {
-    const box = h('div', { class: `cvd-simulator__band${flush ? ' cvd-simulator__band--flush' : ''}`, role: 'img', 'aria-label': label },
-      colors.map((hex) => h('span', { class: 'cvd-simulator__cell', style: { '--c': hex } })));
-    return box;
+  /** 色の帯。numbered が真のとき、各色の下に番号（1、2、3…）を付ける。 */
+  const band = (colors, label, { flush = false, numbered = false } = {}) => {
+    const cells = colors.map((hex, i) => h('span', { class: 'cvd-simulator__cell', style: { '--c': hex } },
+      numbered ? h('span', { class: 'cvd-simulator__num', 'aria-hidden': 'true' }, String(i + 1)) : null));
+    return h('div', {
+      class: `cvd-simulator__band${flush ? ' cvd-simulator__band--flush' : ''}${numbered ? ' cvd-simulator__band--numbered' : ''}`,
+      role: 'img',
+      'aria-label': label,
+    }, cells);
   };
-  const fillBand = (host, colors, label, flush) => host.replaceChildren(band(colors, label, flush));
+  const fillBand = (host, colors, label, options) => host.replaceChildren(band(colors, label, options));
 
-  const pairItem = (p) => h('li', { class: 'cvd-simulator__pair', title: `${p.i + 1}番目と${p.j + 1}番目の色` }, [
+  /** 見分けにくい1組：シミュレーション後の2色の色見本を並べ、帯の下の番号を添える。 */
+  const pairItem = (p) => h('li', { class: 'cvd-simulator__pair', 'aria-label': `${p.i + 1}番目と${p.j + 1}番目の色` }, [
     h('span', { class: 'cvd-simulator__pair-sw', style: { '--c': p.a }, 'aria-hidden': 'true' }),
     h('span', { class: 'cvd-simulator__pair-sw', style: { '--c': p.b }, 'aria-hidden': 'true' }),
-    h('span', { class: 'visually-hidden' }, `${p.i + 1}番目と${p.j + 1}番目の色`),
+    h('span', { class: 'cvd-simulator__pair-num', 'aria-hidden': 'true' }, `${p.i + 1}と${p.j + 1}`),
   ]);
 
   const tileFill = (colors, simulated) => {
@@ -173,18 +193,56 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
   };
   const qualitativeColors = () => palettes.get(state.palette, 8);
 
+  // マスに触れる・タップする・キーボードで移動すると、地方名と県名を地図の下に出す
+  // （tilemap.render の onActive：その都道府県のオブジェクト、地図を離れたら null で呼ばれる）。
+  const READOUT_IDLE = 'マスに触れる（タップする）と、地方名と県名が出ます';
+  const active = { original: null, sim: null };
+  const showReadout = (which) => {
+    const pref = active[which];
+    const { swatch, text } = readouts[which];
+    if (!pref) {
+      swatch.hidden = true;
+      text.textContent = READOUT_IDLE;
+      return;
+    }
+    const region = prefectures.regions.find((r) => r.id === pref.region)?.name ?? pref.region;
+    swatch.hidden = false;
+    swatch.style.setProperty('--c', tileFill(qualitativeColors(), which === 'sim')(pref));
+    text.textContent = `${region}地方・${pref.name}`;
+  };
+
   const maps = {
     original: tilemap.render(mapOriginal, {
       prefectures, fill: tileFill(qualitativeColors(), false), labels: 'auto',
       ariaLabel: '地方区分を定性的パレットで塗り分けたタイル地図（もとの色）',
+      onActive(pref) { active.original = pref; showReadout('original'); },
     }),
     sim: tilemap.render(mapSim, {
       prefectures, fill: tileFill(qualitativeColors(), true), labels: 'auto',
       ariaLabel: '地方区分を定性的パレットで塗り分けたタイル地図（シミュレーション後の色）',
+      onActive(pref) { active.sim = pref; showReadout('sim'); },
     }),
   };
 
-  function render() {
+  // aria-live の領域（まとめの文）は、文が変わったときだけ書き換える。
+  // 強さのスライダーを動かしている間は、止まってから LIVE_DELAY ミリ秒後に書き換える。
+  let liveTimer = null;
+  let liveText = '';
+  const setSummary = (text, { defer = false } = {}) => {
+    window.clearTimeout(liveTimer);
+    liveTimer = null;
+    const apply = () => {
+      liveTimer = null;
+      if (text !== liveText) {
+        liveText = text;
+        summary.textContent = text;
+      }
+    };
+    if (defer) liveTimer = window.setTimeout(apply, LIVE_DELAY);
+    else apply();
+  };
+
+  function render({ deferLive = false } = {}) {
     // 操作部品の状態
     const normal = state.type === 'normal';
     slider.disabled = normal;
@@ -192,8 +250,8 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
     sliderOutput.textContent = normal ? '―' : `${state.severity}%`;
 
     // 色相環
-    fillBand(hueOriginal, hueColors, '色相環の24色（もとの色）', true);
-    fillBand(hueSim, hueColors.map(simulate), '色相環の24色（シミュレーション後の色）', true);
+    fillBand(hueOriginal, hueColors, '色相環の24色（もとの色）', { flush: true });
+    fillBand(hueSim, hueColors.map(simulate), '色相環の24色（シミュレーション後の色）', { flush: true });
 
     // 3種類のスキーム
     const qualitative = qualitativeColors();
@@ -208,17 +266,19 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
       const pairs = hardPairs(s.colors);
       counts[row.id] = pairs.length;
       row.title.textContent = `${s.name}（${s.palette}、${s.colors.length}色）`;
-      fillBand(row.original, s.colors, `${s.name}（${s.palette}）の${s.colors.length}色（もとの色）`);
-      fillBand(row.sim, s.colors.map(simulate), `${s.name}（${s.palette}）の${s.colors.length}色（シミュレーション後の色）`);
+      fillBand(row.original, s.colors, `${s.name}（${s.palette}）の${s.colors.length}色（もとの色）`, { numbered: true });
+      fillBand(row.sim, s.colors.map(simulate), `${s.name}（${s.palette}）の${s.colors.length}色（シミュレーション後の色）`, { numbered: true });
       row.result.replaceChildren(...[
         h('p', { class: 'cvd-simulator__count' }, pairs.length === 0 ? '見分けにくい組はありません' : `見分けにくい組：${pairs.length}組`),
-        pairs.length > 0 ? h('ul', { class: 'cvd-simulator__pairs', 'aria-label': 'シミュレーション後の色で見分けにくい2色の組' }, pairs.map(pairItem)) : null,
+        pairs.length > 0 ? h('ul', { class: 'cvd-simulator__pairs', 'aria-label': 'シミュレーション後の色で見分けにくい2色の組（数字は、帯の下の色の番号）' }, pairs.map(pairItem)) : null,
       ].filter(Boolean));
     }
 
     // タイル地図
     maps.original.update({ fill: tileFill(qualitative, false) });
     maps.sim.update({ fill: tileFill(qualitative, true) });
+    showReadout('original');
+    showReadout('sim');
 
     // まとめの文
     const nameInSentence = (id) => (id === 'qualitative' ? `定性的パレット ${palettes3.qualitative.palette} ` : palettes3[id].name);
@@ -233,7 +293,7 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
         sentences.push(`${without.map((id) => palettes3[id].name).join('と')}には、見分けにくい組はありません。`);
       }
     }
-    summary.textContent = sentences.join('');
+    setSummary(sentences.join(''), { defer: deferLive });
   }
 
   // ---- イベント -------------------------------------------------------------
@@ -247,7 +307,7 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
     state.palette = event.target.value;
     render();
   };
-  const onSlider = () => { state.severity = Number(slider.value); render(); };
+  const onSlider = () => { state.severity = Number(slider.value); render({ deferLive: true }); };
   typeSegment.addEventListener('change', onType);
   paletteSegment.addEventListener('change', onPalette);
   slider.addEventListener('input', onSlider);
@@ -259,6 +319,7 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
       typeSegment.removeEventListener('change', onType);
       paletteSegment.removeEventListener('change', onPalette);
       slider.removeEventListener('input', onSlider);
+      window.clearTimeout(liveTimer);
       maps.original.destroy();
       maps.sim.destroy();
       el.replaceChildren();
