@@ -170,6 +170,31 @@ test('scale（center あり）：最大値側が遠いときも対称', () => {
   assert.equal(s.index(0), 2);
 });
 
+test('scale：境界の浮動小数点誤差で階級がずれない', () => {
+  // 0.2 を5倍する形だと境界が 0.6000000000000001 になり、0.6 が階級2に入ってしまう
+  const s = scale('Blues', 5, [0, 1]);
+  assert.equal(s.index(0.6), 3);
+  assert.equal(s.thresholds[2], 0.6);
+  // n が偶数で center ありのとき、center は境界に乗り、上の階級に入る
+  const e = scale('RdBu', 6, [-3.1, 3.1], { center: 0 });
+  assert.equal(e.thresholds[2], 0);
+  assert.equal(e.index(0), 3);
+  assert.equal(e.index(-1e-9), 2);
+});
+
+test('scale：最小値と最大値が同じなら、中央の階級 Math.floor(n / 2) に入れる', () => {
+  assert.equal(scale('RdBu', 7, [0, 0], { center: 0 }).index(0), 3);
+  assert.equal(scale('Blues', 5, [4, 4]).index(4), 2);
+  assert.equal(scale('Blues', 5, [4, 4]).color(100), get('Blues', 5)[2]);
+  assert.equal(scale('RdBu', 6, [2, 2], { center: 2 }).index(2), 3);
+  // center が最小値・最大値と違えば、幅は 0 にならない
+  assert.equal(scale('RdBu', 7, [5, 5], { center: 0 }).index(5), 6);
+});
+
+test('list：未知の type は空の配列', () => {
+  assert.deepEqual(list('nope'), []);
+});
+
 test('既定のパレットと帰属表示', () => {
   assert.deepEqual({ ...DEFAULTS }, { qualitative: 'Set2', qualitativeSafe: 'OkabeIto', sequential: 'Blues', diverging: 'RdBu' });
   assert.ok(Object.isFrozen(DEFAULTS));
