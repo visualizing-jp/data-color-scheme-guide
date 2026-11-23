@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>データ×スキーム対応表（確認用）</title>
+  <link rel="stylesheet" href="../../css/base.css">
+  <script src="../../vendor/d3/d3.min.js"></script>
+</head>
+<body>
+  <main class="page">
+    <!-- 図を 1 つだけ表示する確認用ページ。コピーした図では、import 先と data-widget の名前を差し替える。 -->
+    <figure class="widget" id="app" data-widget="scheme-matrix"></figure>
+  </main>
+  <script type="module">
+    import { loadDeps } from '../../lib/deps.js';
+    import { mount } from './index.js';
+
+    const el = document.getElementById('app');
+    try {
+      // mount は { destroy() } か、それを解決する Promise を返す。最初の描画が終わるまで待つ。
+      await mount(el, await loadDeps());
+      document.documentElement.dataset.widgetsReady = 'true'; // main.js と同じ印（スクリーンショット撮影はこれを待つ）
+    } catch (error) {
+      console.error(error);
+      const box = document.createElement('div');
+      box.className = 'widget-error';
+      box.setAttribute('role', 'alert');
+      box.textContent = `図を表示できませんでした：${error.message}`;
+      el.replaceChildren(box);
+    }
+  </script>
+</body>
+</html>
