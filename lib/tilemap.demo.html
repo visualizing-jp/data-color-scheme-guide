@@ -23,24 +23,25 @@
   <script type="module">
     import { render } from './tilemap.js';
 
-    // code, 名前, 略称, 地方, x, y（座標は L4 の指示の座標表）
+    // code, 名前, 地方, x, y（座標は L4 の指示の座標表）
     const ROWS = `
-01 北海道 北海 hokkaido 12 0|02 青森県 青森 tohoku 12 1|03 岩手県 岩手 tohoku 12 2|04 宮城県 宮城 tohoku 12 3
-05 秋田県 秋田 tohoku 11 2|06 山形県 山形 tohoku 11 3|07 福島県 福島 tohoku 11 4|08 茨城県 茨城 kanto 12 5
-09 栃木県 栃木 kanto 11 5|10 群馬県 群馬 kanto 10 5|11 埼玉県 埼玉 kanto 11 6|12 千葉県 千葉 kanto 12 6
-13 東京都 東京 kanto 11 7|14 神奈川県 神奈 kanto 10 7|15 新潟県 新潟 chubu 10 4|16 富山県 富山 chubu 9 4
-17 石川県 石川 chubu 8 4|18 福井県 福井 chubu 7 5|19 山梨県 山梨 chubu 10 6|20 長野県 長野 chubu 9 5
-21 岐阜県 岐阜 chubu 8 5|22 静岡県 静岡 chubu 9 6|23 愛知県 愛知 chubu 8 6|24 三重県 三重 kinki 7 7
-25 滋賀県 滋賀 kinki 7 6|26 京都府 京都 kinki 6 6|27 大阪府 大阪 kinki 5 7|28 兵庫県 兵庫 kinki 5 6
-29 奈良県 奈良 kinki 6 7|30 和歌山県 和歌 kinki 6 8|31 鳥取県 鳥取 chugoku 4 6|32 島根県 島根 chugoku 3 6
-33 岡山県 岡山 chugoku 4 7|34 広島県 広島 chugoku 3 7|35 山口県 山口 chugoku 2 7|36 徳島県 徳島 shikoku 4 9
-37 香川県 香川 shikoku 4 8|38 愛媛県 愛媛 shikoku 3 8|39 高知県 高知 shikoku 3 9|40 福岡県 福岡 kyushu 1 7
-41 佐賀県 佐賀 kyushu 0 7|42 長崎県 長崎 kyushu 0 8|43 熊本県 熊本 kyushu 1 8|44 大分県 大分 kyushu 2 8
-45 宮崎県 宮崎 kyushu 2 9|46 鹿児島県 鹿児 kyushu 1 9|47 沖縄県 沖縄 kyushu 0 11`;
+01 北海道 hokkaido 12 0|02 青森県 tohoku 12 1|03 岩手県 tohoku 12 2|04 宮城県 tohoku 12 3
+05 秋田県 tohoku 11 2|06 山形県 tohoku 11 3|07 福島県 tohoku 11 4|08 茨城県 kanto 12 5
+09 栃木県 kanto 11 5|10 群馬県 kanto 10 5|11 埼玉県 kanto 11 6|12 千葉県 kanto 12 6
+13 東京都 kanto 11 7|14 神奈川県 kanto 10 7|15 新潟県 chubu 10 4|16 富山県 chubu 9 4
+17 石川県 chubu 8 4|18 福井県 chubu 7 5|19 山梨県 chubu 10 6|20 長野県 chubu 9 5
+21 岐阜県 chubu 8 5|22 静岡県 chubu 9 6|23 愛知県 chubu 8 6|24 三重県 kinki 7 7
+25 滋賀県 kinki 7 6|26 京都府 kinki 6 6|27 大阪府 kinki 5 7|28 兵庫県 kinki 5 6
+29 奈良県 kinki 6 7|30 和歌山県 kinki 6 8|31 鳥取県 chugoku 4 6|32 島根県 chugoku 3 6
+33 岡山県 chugoku 4 7|34 広島県 chugoku 3 7|35 山口県 chugoku 2 7|36 徳島県 shikoku 4 9
+37 香川県 shikoku 4 8|38 愛媛県 shikoku 3 8|39 高知県 shikoku 3 9|40 福岡県 kyushu 1 7
+41 佐賀県 kyushu 0 7|42 長崎県 kyushu 0 8|43 熊本県 kyushu 1 8|44 大分県 kyushu 2 8
+45 宮崎県 kyushu 2 9|46 鹿児島県 kyushu 1 9|47 沖縄県 kyushu 0 11`;
     const prefectures = {
       meta: { grid: { columns: 13, rows: 12 } },
       prefectures: ROWS.split(/[|\n]/).map((s) => s.trim()).filter(Boolean).map((row) => {
-        const [code, name, short, region, x, y] = row.split(' ');
+        const [code, name, region, x, y] = row.split(' ');
+        const short = name === '北海道' ? name : name.replace(/[県府都]$/, ''); // 北海道、神奈川、和歌山、鹿児島 は略さない
         return { code, name, short, region, x: Number(x), y: Number(y) };
       }),
     };

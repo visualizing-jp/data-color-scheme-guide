@@ -1,7 +1,7 @@
 // lib/tilemap.js のうち、DOM を使わない部分（マスの位置、文字色の選択）の検査。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tileRect, viewBoxSize, relativeLuminance, labelColor } from '../lib/tilemap.js';
+import { tileRect, viewBoxSize, relativeLuminance, labelColor, labelFontSize } from '../lib/tilemap.js';
 
 test('tileRect：座標から、隙間を空けた正方形のマスの位置を求める', () => {
   const origin = tileRect(0, 0);
@@ -77,4 +77,13 @@ test('labelColor：濃いグレーと白のうち、コントラスト比が高�
     assert.ok(contrast(hex, chosen) >= contrast(hex, other), hex);
     assert.ok(contrast(hex, chosen) >= 4, hex); // 中間のグレーが最も低く、それでも 4 を超える
   }
+});
+
+test('labelFontSize：3 文字の県名がマスの幅の 8 割以内に収まり、文字サイズはマスの一辺の約 25%', () => {
+  const size = tileRect(0, 0).size;
+  const f3 = labelFontSize(3);
+  assert.ok(3 * f3 <= size * 0.8);
+  assert.ok(Math.abs(f3 / size - 0.25) < 0.01);
+  assert.ok(labelFontSize(2) === f3); // 2 文字でも大きくしない
+  assert.ok(4 * labelFontSize(4) <= size * 0.8); // 長い略称は小さくする
 });
