@@ -239,13 +239,40 @@ figure.widget > * { min-width: 0; }
   font-size: 0.9rem;
   color: var(--c-text-2);
 }
+/* 1点の値を選ぶ見た目：溝は左端から右端まで同じ色・同じ太さ（つまみの左側を塗り分けない）。
+   つまみは、背景色の縁を付けた濃いグレーの丸。Chromium・Safari（-webkit-）と Firefox（-moz-）で同じ見た目にする。 */
 .ctl-slider input[type="range"] {
+  --slider-track: 4px;    /* 溝の太さ */
+  --slider-thumb: 20px;   /* つまみの直径（縁を含む） */
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   min-width: 0;
   height: 28px;           /* タップしやすい高さ */
   margin: 0;
-  accent-color: var(--c-ink);
+  background: transparent;
   cursor: pointer;
+}
+.ctl-slider input[type="range"]::-webkit-slider-runnable-track {
+  height: var(--slider-track); border: 0; border-radius: calc(var(--slider-track) / 2);
+  background: var(--c-line-strong);
+}
+.ctl-slider input[type="range"]::-moz-range-track {
+  height: var(--slider-track); border: 0; border-radius: calc(var(--slider-track) / 2);
+  background: var(--c-line-strong);
+}
+.ctl-slider input[type="range"]::-moz-range-progress {
+  height: var(--slider-track); background: transparent;   /* つまみの左側を塗り分けない */
+}
+.ctl-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  box-sizing: border-box; width: var(--slider-thumb); height: var(--slider-thumb);
+  margin-top: calc((var(--slider-track) - var(--slider-thumb)) / 2);
+  border: 3px solid var(--c-surface); border-radius: 50%; background: var(--c-ink);
+}
+.ctl-slider input[type="range"]::-moz-range-thumb {
+  box-sizing: border-box; width: var(--slider-thumb); height: var(--slider-thumb);
+  border: 3px solid var(--c-surface); border-radius: 50%; background: var(--c-ink);
 }
 
 /* .ctl-segment：選択ボタンの組。ネイティブのラジオを使うので、矢印キーの移動はブラウザ任せ。
@@ -351,26 +378,7 @@ figure.widget > * { min-width: 0; }
   .ctl-button { min-height: 44px; }
   .ctl-toggle { min-height: 44px; }
   .ctl-toggle input { width: 24px; height: 24px; }
-  .ctl-slider input[type="range"] { height: 44px; }
-  /* つまみを大きくするには、標準の見た目をやめて、溝とつまみを自前で描く */
-  .ctl-slider input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; }
-  .ctl-slider input[type="range"]::-webkit-slider-runnable-track {
-    height: 6px; border-radius: 3px; background: var(--c-line-strong);
-  }
-  .ctl-slider input[type="range"]::-moz-range-track {
-    height: 6px; border-radius: 3px; background: var(--c-line-strong);
-  }
-  .ctl-slider input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 28px; height: 28px; margin-top: -11px;
-    border: 2px solid var(--c-surface); border-radius: 50%; background: var(--c-ink);
-    box-shadow: 0 0 0 1px var(--c-ink);
-  }
-  .ctl-slider input[type="range"]::-moz-range-thumb {
-    width: 24px; height: 24px; box-sizing: content-box;
-    border: 2px solid var(--c-surface); border-radius: 50%; background: var(--c-ink);
-    box-shadow: 0 0 0 1px var(--c-ink);
-  }
+  .ctl-slider input[type="range"] { height: 44px; --slider-thumb: 28px; }
 }
 
 /* --- 判定表示（無彩色。記号と枠線の太さで区別する） ----------------------- */
