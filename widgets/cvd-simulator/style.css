@@ -1,0 +1,84 @@
+/* 図「色覚シミュレータ」の専用スタイル。共通の部品（.ctl-* / .fig-* / .legend）は css/base.css にある。
+   上段（もとの色）と下段（シミュレーション後の色）は、同じ幅・同じ列の帯なので、色の位置がそろう。 */
+
+.cvd-simulator { container-type: inline-size; }
+
+/* 操作部品 */
+.cvd-simulator__ctl { align-items: flex-end; }
+.cvd-simulator__field { display: grid; gap: var(--s-1); }
+.cvd-simulator__label { font-weight: 600; font-size: 0.9rem; }
+.cvd-simulator__slider { align-self: flex-end; min-height: 40px; }
+.cvd-simulator__slider.is-disabled > label,
+.cvd-simulator__slider.is-disabled > output { color: var(--c-text-3); }
+.cvd-simulator__slider.is-disabled input[type="range"] { opacity: 0.45; cursor: not-allowed; }
+
+/* 区画 */
+.cvd-simulator__block {
+  margin-top: var(--s-5);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--c-line);
+}
+.cvd-simulator__block-title { margin: 0 0 var(--s-3); font-weight: 700; font-size: 0.95rem; line-height: 1.5; }
+
+/* 上段・下段の1本の帯。幅が広いときは、見出しを左に、帯を右に置く。狭いときは、見出しを帯の上に置く。 */
+.cvd-simulator__strip { display: grid; gap: var(--s-1); margin-bottom: var(--s-2); min-width: 0; }
+.cvd-simulator__cap { font-size: 0.8125rem; color: var(--c-text-2); line-height: 1.5; }
+.cvd-simulator__band {
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+}
+.cvd-simulator__band--flush { gap: 0; }
+.cvd-simulator__cell {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 40px;
+  background: var(--c);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);   /* 白に近い色も見えるようにする */
+}
+.cvd-simulator__band--flush { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3); }
+.cvd-simulator__band--flush .cvd-simulator__cell { box-shadow: none; }
+
+/* スキームごとの行 */
+.cvd-simulator__scheme { margin-bottom: var(--s-4); }
+.cvd-simulator__scheme-title { margin: 0 0 var(--s-1); font-size: 0.9rem; font-weight: 600; }
+.cvd-simulator__scheme-body { display: grid; gap: var(--s-2); }
+.cvd-simulator__scheme-bands { min-width: 0; }
+.cvd-simulator__result { min-width: 0; }
+.cvd-simulator__count { margin: 0; font-size: 0.9rem; font-weight: 700; line-height: 1.5; }
+.cvd-simulator__pairs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: var(--s-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.cvd-simulator__pair { display: inline-flex; }
+.cvd-simulator__pair-sw {
+  width: 20px;
+  height: 20px;
+  background: var(--c);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+/* タイル地図 */
+.cvd-simulator__maps { display: grid; gap: var(--s-4); }
+.cvd-simulator__map-cap { margin: 0 0 var(--s-1); }
+.cvd-simulator__map { min-width: 0; }
+
+/* まとめの文 */
+.cvd-simulator__summary {
+  margin: var(--s-5) 0 0;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--c-ink);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+@container (min-width: 640px) {
+  .cvd-simulator__strip { grid-template-columns: 11.5em minmax(0, 1fr); align-items: center; gap: var(--s-3); }
+  .cvd-simulator__scheme-body { grid-template-columns: minmax(0, 1fr) 15em; align-items: center; gap: var(--s-4); }
+  .cvd-simulator__maps { grid-template-columns: 1fr 1fr; }
+}
