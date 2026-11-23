@@ -1,23 +1,13 @@
-// 図「錐体エクスプローラ」（第1章）。
-// 第1部：波長を動かして、L・M・S の3種類の錐体の反応量を見る。
-// 第2部：黄色の単色光と、緑＋赤の混合光で、錐体の反応量が同じになる（＝同じ色に見える）ことを確かめる。
-// データ（cones.json）は Stockman & Sharpe (2000) の2°視野の錐体分光感度と CIE 1931 等色関数を 390〜700nm・5nm刻みで持つ。
+// 図「錐体エクスプローラ」（第1章の1組目）。
+// 波長を動かして、L・M・S の3種類の錐体の反応量を見る。
+// 同じ錐体のデータを使う「光の混合」（widgets/cone-mix/）とは、cone-math.js と cones.json を共有している。
 import { ensureStyle, el as h, uid } from '../../lib/dom.js';
+import { CONES, loadCones } from './cone-math.js';
 
 ensureStyle(new URL('./style.css', import.meta.url));
 
-const CONES = ['L', 'M', 'S'];
 const WL_MIN = 390;
 const WL_MAX = 700;
-
-// 第2部の光（波長 nm）と初期値
-const YELLOW = 580;
-const GREEN = 550;
-const RED = 630;
-const GREEN_START = 0.2;
-const GREEN_MATCH = 0.605;
-const MATCH_TOLERANCE = 0.02; // L と M の差がどちらもこれ以下なら「同じ色に見える」
-const BAR_MAX = 1.4;          // 第2部の横棒の目盛りの上限（緑 1 のとき L は 1.34）
 
 /** 反応量のやさしい言い方。表示する小数2桁の値で判定する。 */
 function amountWord(value) {
@@ -29,43 +19,12 @@ function amountWord(value) {
 }
 
 /**
- * XYZ（CIE 1931）→ 画面の近似色。負の成分を 0 に切り、最大成分を 1 にそろえ、sRGB のガンマをかける。
- *
- * lib/color.js を使わずに、この図の中で計算している。単色光（スペクトル上の純粋な色）は
- * sRGB の色域の外にあり、色空間の変換だけでは表示できる色にならない。そのため、この図に固有の
- * 近似（色域の外へ出た負の成分を 0 に切り、最大成分を 1 にそろえて明るさを保つ）が要る。
- * lib/color.js の色域への収め方（明度と色相を保って彩度を下げる）とは目的が違うので、共有せずにここへ置く。
- */
-function xyzToHex([x, y, z]) {
-  const lin = [
-    3.2406 * x - 1.5372 * y - 0.4986 * z,
-    -0.9689 * x + 1.8758 * y + 0.0415 * z,
-    0.0557 * x - 0.2040 * y + 1.0570 * z,
-  ].map((v) => Math.max(0, v));
-  const max = Math.max(...lin);
-  const norm = max > 0 ? lin.map((v) => v / max) : lin;
-  const enc = (c) => (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055);
-  return '#' + norm.map((c) => Math.round(Math.min(1, Math.max(0, enc(c))) * 255).toString(16).padStart(2, '0')).join('');
-}
-
-/**
  * @param {HTMLElement} el マウント点（<figure class="widget" data-widget="cone-explorer">）
  * @param {{ d3: object }} deps
  * @returns {Promise<{ destroy(): void }>}
  */
 export async function mount(el, { d3 }) {
-  const url = new URL('./cones.json', import.meta.url);
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`錐体のデータを読み込めません（${response.status}）: ${url.pathname}`);
-  const data = await response.json();
-
-  const wls = data.wavelengths;
-  const indexOf = new Map(wls.map((w, i) => [w, i]));
-  const at = (cone, w) => data[cone][indexOf.get(w)];
-  const xyzAt = (w) => {
-    const i = indexOf.get(w);
-    return [data.xbar[i], data.ybar[i], data.zbar[i]];
-  };
+  const { data, wls, indexOf, at } = await loadCones();
   /** 各錐体の感度が最大になる波長（データから求める） */
   const peaks = Object.fromEntries(CONES.map((c) => {
     let best = 0;
@@ -73,23 +32,19 @@ export async function mount(el, { d3 }) {
     return [c, wls[best]];
   }));
 
-  const state = { wl: 580, green: GREEN_START };
+  const state = { wl: 580 };
 
   // ---- 部品 --------------------------------------------------------------
   const wlId = uid('cone-explorer-wl');
   const wlOutput = h('output', { for: wlId });
   const wlSlider = h('input', { id: wlId, type: 'range', min: WL_MIN, max: WL_MAX, step: 5, value: state.wl });
 
-  const greenId = uid('cone-explorer-green');
-  const greenOutput = h('output', { for: greenId });
-  const greenSlider = h('input', { id: greenId, type: 'range', min: 0, max: 1, step: 0.005, value: state.green });
-
   const plot = h('div', { class: 'cone-explorer__plot' });
   const lightSwatch = h('span', { class: 'swatch cone-explorer__light-swatch' });
   const lightWl = h('span', { class: 'cone-explorer__light-wl' });
 
-  // 第1部の横棒（L・M・S）
-  const bars1 = Object.fromEntries(CONES.map((c) => {
+  // 横棒（L・M・S）
+  const bars = Object.fromEntries(CONES.map((c) => {
     const fill = h('div', { class: 'cone-explorer__fill' });
     const value = h('span', { class: 'cone-explorer__value' });
     const word = h('span', { class: 'cone-explorer__word' });
@@ -101,39 +56,7 @@ export async function mount(el, { d3 }) {
     return [c, { row, fill, value, word }];
   }));
 
-  // 第2部の横棒（錐体ごとに、黄色の光が上、混合光が下）
-  const bars2 = {};
-  const compareRows = [];
-  for (const c of CONES) {
-    bars2[c] = {};
-    for (const kind of ['yellow', 'mix']) {
-      const fill = h('div', { class: 'cone-explorer__fill' });
-      const value = h('span', { class: 'cone-explorer__value' });
-      bars2[c][kind] = { fill, value };
-      compareRows.push(h('div', {
-        class: `cone-explorer__bar cone-explorer__bar--${c} cone-explorer__bar--${kind}`,
-        dataset: { cone: c, light: kind },
-      }, [
-        h('span', { class: 'cone-explorer__cone' }, kind === 'yellow' ? c : ''),
-        h('div', { class: 'cone-explorer__track cone-explorer__track--scaled', 'aria-hidden': 'true' }, fill),
-        value,
-      ]));
-    }
-  }
-  const axis = h('div', { class: 'cone-explorer__axis', 'aria-hidden': 'true' },
-    [0, 0.5, 1].map((t) => h('span', { style: { left: `${(t / BAR_MAX) * 100}%` } }, t === 0 ? '0' : t.toFixed(1))));
-
-  const mixSwatch = h('span', { class: 'swatch cone-explorer__light-swatch' });
-  const yellowSwatch = h('span', { class: 'swatch cone-explorer__light-swatch' });
-  const diffText = h('p', { class: 'cone-explorer__diff' });
-  const verdict = h('span');
-  const btnMatch = h('button', { type: 'button', class: 'ctl-button ctl-button--primary' }, 'ぴったり合わせる');
-  const btnReset = h('button', { type: 'button', class: 'ctl-button' }, '最初に戻す');
-
-  const legendKey = (kind) => h('span', { class: `cone-explorer__key cone-explorer__key--${kind}`, 'aria-hidden': 'true' });
-
   el.replaceChildren(
-    // 第1部
     h('p', { class: 'fig-title' }, '錐体エクスプローラ：波長を動かして、3種類の錐体の反応を見る'),
     h('p', { class: 'cone-explorer__lead' }, '光の波長を変えると、L・M・Sの錐体の反応量が変わります。'),
     h('div', { class: 'cone-explorer__top' }, [
@@ -148,44 +71,12 @@ export async function mount(el, { d3 }) {
     h('div', { class: 'ctl' },
       h('div', { class: 'ctl-slider' }, [h('label', { for: wlId }, '波長'), wlSlider, wlOutput])),
     h('div', { class: 'cone-explorer__bars', role: 'group', 'aria-label': 'この波長の光に対する錐体の反応量' },
-      CONES.map((c) => bars1[c].row)),
-
-    // 第2部
-    h('p', { class: 'fig-subtitle cone-explorer__part2' }, 'ちがう光でも、同じ色に見える'),
-    h('p', { class: 'cone-explorer__lead' },
-      '黄色の光（580nm）と、緑の光（550nm）＋赤い光（630nm）。成分は違いますが、混ぜ方しだいで錐体の反応量はほぼ同じになります。'),
-    h('div', { class: 'cone-explorer__pair' }, [
-      h('div', { class: 'cone-explorer__card' }, [
-        yellowSwatch,
-        h('div', {}, [
-          h('p', { class: 'cone-explorer__card-title' }, '左：黄色の単色光'),
-          h('p', { class: 'cone-explorer__card-text' }, '580nm、強さ 1'),
-        ]),
-      ]),
-      h('div', { class: 'cone-explorer__card' }, [
-        mixSwatch,
-        h('div', {}, [
-          h('p', { class: 'cone-explorer__card-title' }, '右：緑の光（550nm）＋赤い光（630nm）'),
-          h('p', { class: 'cone-explorer__card-text' }, '赤い光の強さは 1 で固定'),
-        ]),
-      ]),
-    ]),
-    h('div', { class: 'ctl' },
-      h('div', { class: 'ctl-slider' }, [h('label', { for: greenId }, '緑の光の強さ'), greenSlider, greenOutput])),
-    h('ul', { class: 'legend' }, [
-      h('li', {}, [legendKey('yellow'), '黄色の光（580nm）']),
-      h('li', {}, [legendKey('mix'), '緑の光＋赤い光']),
-    ]),
-    h('div', { class: 'cone-explorer__bars cone-explorer__compare', role: 'group', 'aria-label': '黄色の光と混合光の、錐体の反応量の比較' },
-      [...compareRows, axis]),
-    diffText,
-    h('p', { class: 'cone-explorer__status', role: 'status' }, verdict),
-    h('div', { class: 'ctl' }, [btnMatch, btnReset]),
+      CONES.map((c) => bars[c].row)),
     h('p', { class: 'fig-note' },
-      '錐体の感度は Stockman & Sharpe (2000) の2°視野の錐体分光感度（エネルギー基準、各錐体の最大値を1に正規化）によります。画面では、単色光の色を完全には再現できません。色見本は近似です。'),
+      '錐体の感度は Stockman & Sharpe (2000) の2°視野の錐体分光感度（エネルギー基準、各錐体の最大値を1に正規化）によります。画面に出す波長の色見本は近似です。'),
   );
 
-  // ---- 第1部の曲線（SVG）---------------------------------------------------
+  // ---- 曲線（SVG）---------------------------------------------------
   const PAD = { top: 44, right: 14, bottom: 46, left: 14 };
   const viewWidth = () => {
     const width = plot.clientWidth;
@@ -285,7 +176,6 @@ export async function mount(el, { d3 }) {
 
   // ---- 値の反映 ----------------------------------------------------------
   const pct = (v, max) => `${Math.max(0, Math.min(1, v / max)) * 100}%`;
-  const mixValue = (c, g) => g * at(c, GREEN) + at(c, RED);
 
   function renderLight() {
     wlOutput.textContent = `${state.wl}nm`;
@@ -293,7 +183,7 @@ export async function mount(el, { d3 }) {
     lightSwatch.style.setProperty('--swatch', data.bandColor[indexOf.get(state.wl)]);
     for (const c of CONES) {
       const v = at(c, state.wl);
-      const b = bars1[c];
+      const b = bars[c];
       b.fill.style.width = pct(v, 1);
       b.value.textContent = v.toFixed(2);
       b.word.textContent = amountWord(v);
@@ -302,40 +192,9 @@ export async function mount(el, { d3 }) {
     moveMarker();
   }
 
-  function renderMix() {
-    const g = state.green;
-    greenOutput.textContent = g.toFixed(3);
-    const diffs = {};
-    for (const c of CONES) {
-      const yv = at(c, YELLOW);
-      const mv = mixValue(c, g);
-      diffs[c] = Math.abs(mv - yv);
-      bars2[c].yellow.fill.style.width = pct(yv, BAR_MAX);
-      bars2[c].mix.fill.style.width = pct(mv, BAR_MAX);
-      bars2[c].yellow.value.textContent = yv.toFixed(2);
-      bars2[c].mix.value.textContent = mv.toFixed(2);
-    }
-    const mixXyz = xyzAt(GREEN).map((v, i) => g * v + xyzAt(RED)[i]);
-    mixSwatch.style.setProperty('--swatch', xyzToHex(mixXyz));
-    yellowSwatch.style.setProperty('--swatch', xyzToHex(xyzAt(YELLOW)));
-    const same = diffs.L <= MATCH_TOLERANCE && diffs.M <= MATCH_TOLERANCE;
-    verdict.className = `verdict verdict--${same ? 'good' : 'caution'}`;
-    verdict.textContent = same ? '反応量がほぼ同じ → 同じ色に見えます' : 'まだ違います';
-    diffText.textContent = `黄色の光との反応量の差：L ${diffs.L.toFixed(3)}、M ${diffs.M.toFixed(3)}（どちらも ${MATCH_TOLERANCE.toFixed(2)} 以下なら「ほぼ同じ」とみなします）`;
-    diffText.dataset.diffL = diffs.L.toFixed(4);
-    diffText.dataset.diffM = diffs.M.toFixed(4);
-  }
-
   // ---- イベント ----------------------------------------------------------
   const onWl = () => { state.wl = Number(wlSlider.value); renderLight(); };
-  const onGreen = () => { state.green = Number(greenSlider.value); renderMix(); };
-  const setGreen = (value) => { state.green = value; greenSlider.value = String(value); renderMix(); };
-  const onMatch = () => setGreen(GREEN_MATCH);
-  const onReset = () => setGreen(GREEN_START);
   wlSlider.addEventListener('input', onWl);
-  greenSlider.addEventListener('input', onGreen);
-  btnMatch.addEventListener('click', onMatch);
-  btnReset.addEventListener('click', onReset);
 
   // 表示幅が変わったら、viewBox の幅を測り直して描き直す
   const observer = typeof ResizeObserver === 'function'
@@ -348,15 +207,11 @@ export async function mount(el, { d3 }) {
 
   drawPlot();
   renderLight();
-  renderMix();
 
   return {
     destroy() {
       observer?.disconnect();
       wlSlider.removeEventListener('input', onWl);
-      greenSlider.removeEventListener('input', onGreen);
-      btnMatch.removeEventListener('click', onMatch);
-      btnReset.removeEventListener('click', onReset);
       el.replaceChildren();
     },
   };

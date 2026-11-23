@@ -30,7 +30,7 @@ lib/palettes.js         パレット（実装済み）
 lib/tilemap.js          都道府県タイル地図（実装済み）
 data/prefectures.json   都道府県データ（実装済み。数値は総務省統計局『人口推計』から転記）
 widgets/_template/      図のひな形：index.js、style.css、demo.html
-widgets/<名前>/         9つの図（実装済み）：index.js、style.css、demo.html、必要なら自前のデータ
+widgets/<名前>/         10個の図（実装済み。一覧は下の「図の一覧」）：index.js、style.css、demo.html、必要なら自前のデータ
 widgets/_placeholder.js 「準備中」の枠（モジュールが無い図の名前があるときに、main.js が使う）
 LICENSES/Apache-2.0.txt ColorBrewer のライセンス（Apache License 2.0）の全文
 tests/                  contract.test.js（共有モジュール・データ・図の mount の契約）、page.test.js（index.html の骨組み）
@@ -75,8 +75,25 @@ export function mount(el, deps) { … }
 `main.js` は `[data-widget]` をすべて見つけ、`./widgets/<名前>/index.js` を動的 import して `mount(el, deps)` を呼び、Promise なら解決を待ちます。
 **全図の mount が終わると `<html data-widgets-ready="true">` が付きます**（失敗して「表示できませんでした」の枠になった図があっても付きます）。
 スクリーンショットの撮影は、この印が付くのを待ってから行います。`widgets/<名前>/demo.html` も、mount が成功すると同じ印を付けます（失敗するとエラーを画面に出し、印は付けません）。
-9つの図はすべて実装済みです。新しい図を足すときは、`widgets/<名前>/index.js` を置いてから、`index.html` にマウント点を足します
+10個の図はすべて実装済みです。新しい図を足すときは、`widgets/<名前>/index.js` を置いてから、`index.html` にマウント点を足します
 （モジュールが存在しない名前を import するとブラウザがコンソールに 404 を出すため、マウント点だけを先に置くのは避けます）。
+
+### 図の一覧
+
+| 章 | 図（`data-widget`） | 見出し（`.fig-title`） |
+|---|---|---|
+| 0 | `intro-compare` | 同じデータなのに、見え方がちがう |
+| 1 | `cone-explorer` | 錐体エクスプローラ：波長を動かして、3種類の錐体の反応を見る |
+| 1 | `cone-mix` | 光の混合：ちがう光でも、同じ色に見える |
+| 2 | `three-knobs` | 色の3つのつまみ：色相・彩度・明度で色を作る |
+| 3 | `scheme-matrix` | データ×スキーム対応表：組み合わせを試す |
+| 3 | `scheme-anatomy` | スキーム解剖：スキームの中身を、明度で見る |
+| 4 | `cvd-simulator` | 色覚シミュレータ：見え方のちがいを確かめる |
+| 4 | `problem-pairs` | 見分けにくい色の組：明度の差をつける |
+| 5 | `decision-flow` | 判断フロー：データを見て、スキームを選ぶ |
+| 5 | `quiz` | 理解度クイズ：このデータに合うスキームは？ |
+
+第1章は「本文 → `cone-explorer` → 本文 → `cone-mix` → 本文」の2組です。2つの図は、同じ錐体のデータ（`widgets/cone-explorer/cones.json`）と共通の計算（`widgets/cone-explorer/cone-math.js`）を使います。
 
 ### 図の作り方
 
@@ -111,7 +128,7 @@ npm run shots -- widgets/quiz/demo.html        # 指定したページだけを�
 | 横スクロール | なし（`document.documentElement.scrollWidth <= window.innerWidth`） |
 | エラー表示 | 「図を表示できませんでした」の表示（`.widget-error` と、本文中のその文言）が 0 件 |
 | SVG 内の文字の最小サイズ | 表示上のサイズが 11px 以上。`svg text` ごとに「計算された `font-size` × 画面への拡大率（`viewBox` の縮尺を含む）」を測る。表示されていない文字は対象外 |
-| 準備中の個数 | 件数の表示だけで、合否には関係しない（`.widget-placeholder` の個数。9つの図が実装済みの現在は 0） |
+| 準備中の個数 | 件数の表示だけで、合否には関係しない（`.widget-placeholder` の個数。10個の図が実装済みの現在は 0） |
 
 1つでも不合格があれば、表のあとに内訳（エラーの文面や失敗した URL）を出し、終了コードを 1 にします。
 引数のパスが無いなど、実行の前提を満たさないときの終了コードは 2 です。
