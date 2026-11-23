@@ -1,0 +1,89 @@
+/* 図「見分けにくい色の組」の専用スタイル。ページのUIは無彩色。色が出るのは色見本だけ（横棒はグレー）。
+   文字はすべて HTML で組むので、幅 390px でも本文と同じ大きさ（14px 以上）で表示される。 */
+
+.problem-pairs__field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  min-width: 0;
+}
+.problem-pairs__label { font-weight: 600; font-size: 0.9rem; }
+
+.problem-pairs__btn {
+  min-height: 40px;
+  padding: 0.45em 1.2em;
+  border: 1px solid var(--c-line-strong);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.problem-pairs__btn:hover { background: var(--c-surface-2); }
+
+/* 3つの表示：2色を隙間なく隣り合わせた色見本 */
+.problem-pairs__panels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-4);
+  margin-block: var(--s-4);
+}
+.problem-pairs__panels--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.problem-pairs__panel { margin: 0; min-width: 0; }
+.problem-pairs__panel[hidden] { display: none; }
+.problem-pairs__caption { margin-bottom: var(--s-2); font-size: 0.9rem; font-weight: 700; }
+.problem-pairs__pair {
+  display: flex;
+  height: 120px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+.problem-pairs__half { flex: 1 1 0; background: var(--swatch, transparent); }
+.problem-pairs__panel-note {
+  margin: var(--s-2) 0 0;
+  color: var(--c-text-2);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .problem-pairs__panels,
+  .problem-pairs__panels--two { grid-template-columns: minmax(0, 1fr); gap: var(--s-3); }
+  .problem-pairs__pair { height: 80px; }
+}
+
+.problem-pairs__result { margin: 0 0 var(--s-4); font-size: 0.95rem; }
+
+/* 4つの見え方での差の一覧：小さな横棒と数値と判定の語 */
+.problem-pairs__list-title { margin: var(--s-4) 0 var(--s-2); font-size: 0.9rem; font-weight: 700; }
+.problem-pairs__rows { margin: 0; padding: 0; list-style: none; }
+.problem-pairs__row {
+  display: grid;
+  grid-template-columns: 3em minmax(60px, 1fr) 2.6em minmax(8.5em, auto);
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  padding: var(--s-1) var(--s-2);
+  border: 2px solid transparent;
+  font-size: 0.875rem;
+}
+.problem-pairs__row--selected { border-color: var(--c-ink); border-radius: var(--radius); background: var(--c-surface-2); }
+.problem-pairs__row-label { font-weight: 700; }
+.problem-pairs__bar {
+  position: relative;
+  display: block;
+  height: 14px;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-line-strong);
+}
+.problem-pairs__row--selected .problem-pairs__bar { background: var(--c-surface); }
+.problem-pairs__fill { position: absolute; inset: 0 auto 0 0; background: var(--c-text-2); }
+.problem-pairs__tick { position: absolute; top: -2px; bottom: -2px; width: 0; border-left: 1px dashed var(--c-ink); }
+.problem-pairs__value { font-variant-numeric: tabular-nums; text-align: right; }
+.problem-pairs__word { color: var(--c-text-2); }
+.problem-pairs__scale { margin: var(--s-1) 0 0; color: var(--c-text-3); font-size: 0.8125rem; }
+
+@media (max-width: 600px) {
+  .problem-pairs__row { grid-template-columns: 2.6em minmax(40px, 1fr) 2.4em; }
+  .problem-pairs__word { grid-column: 2 / -1; margin-top: calc(var(--s-1) * -1); }
+}
