@@ -35,14 +35,18 @@ export async function mount(el, { color }) {
 
   const state = { pairId: pairs[0].id, viewId: 'deutan', diff: 0 };
 
-  /** 明度の差 d（%）をつけた2色を返す。色Aを +d/2、色Bを -d/2 する（色相と彩度はそのまま）。 */
+  /**
+   * 明度の差 d（%）をつけた2色 [色A, 色B] を返す。明るくする側（pair.lighter。既定は "a"）を +d/2、
+   * もう一方を -d/2 する（色相と彩度はそのまま）。向きは、どの見え方でも差が縮まないものを組ごとに選んである。
+   */
   function makePair(pair, diff) {
     const shift = diff / 100 / 2;
+    const upSign = pair.lighter === 'b' ? -1 : +1; // 色Aに掛ける符号
     const make = (hex, sign) => {
       const { l, c, h: hue } = color.hexToOklch(hex);
       return color.oklchToHex({ l: l + sign * shift, c, h: hue });
     };
-    return [make(pair.a, +1), make(pair.b, -1)];
+    return [make(pair.a, upSign), make(pair.b, -upSign)];
   }
 
   /** 2色が、ある見え方でどう見えるか。 */
@@ -120,6 +124,7 @@ export async function mount(el, { color }) {
     h('p', { class: 'problem-pairs__list-title' }, '4つの見え方での2色の差'),
     h('ul', { class: 'problem-pairs__rows' }, rows.map((r) => r.item)),
     h('p', { class: 'problem-pairs__scale' }, `棒の目盛りの線は、差が ${BAD_BELOW.toFixed(2)} と ${CAUTION_BELOW.toFixed(2)} の位置です。`),
+    h('p', { class: 'problem-pairs__scale' }, 'どちらを明るくするかで、効き方が変わることがあります。この図では、どの見え方でも差が広がる向きを選んでいます。'),
     h('p', { class: 'fig-note' }, '色の組は Datawrapper の記事によります。シミュレーションは目安で、実際の見え方には個人差があります。差は OKLab 上の距離です。'),
   );
 
