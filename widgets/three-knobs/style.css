@@ -1,0 +1,97 @@
+/* 図「色の3つのつまみ」の専用スタイル。共通の部品は css/base.css にある。 */
+
+.three-knobs__main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--s-4);
+  margin-block: var(--s-4);
+}
+
+.three-knobs__big {
+  flex: 1 1 200px;
+  min-height: 120px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: var(--radius);
+  background: var(--swatch, transparent);
+}
+
+.three-knobs__values {
+  flex: 1 1 200px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--s-1) var(--s-4);
+  align-content: center;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.three-knobs__values dt { color: var(--c-text-2); }
+.three-knobs__values dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
+.three-knobs__hex { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 1.1rem; }
+
+.three-knobs__section { margin-block: var(--s-4); }
+.three-knobs__heading { margin: 0 0 var(--s-2); font-size: 0.95rem; font-weight: 700; line-height: 1.5; }
+
+.three-knobs__band {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 12), minmax(0, 1fr));
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.three-knobs__band--hue { --cols: 12; }
+.three-knobs__band--light { --cols: 7; }
+.three-knobs__cell { min-width: 0; text-align: center; }
+.three-knobs__chip {
+  display: block;
+  height: 44px;
+  background: var(--swatch, transparent);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+.three-knobs__label {
+  display: block;
+  margin-top: 2px;
+  color: var(--c-text-2);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.three-knobs__sr {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.three-knobs__comment { margin: var(--s-2) 0 0; font-size: 0.9rem; line-height: 1.6; }
+.three-knobs__comment small { color: var(--c-text-3); font-size: 0.8125rem; }
+
+.three-knobs__status {
+  margin: var(--s-3) 0 0;
+  padding: var(--s-2) var(--s-3);
+  border-left: 4px solid var(--c-line-strong);
+  background: var(--c-surface-2);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.three-knobs__aside {
+  margin-top: var(--s-5);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--c-line-strong);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+}
+.three-knobs__pair { display: flex; flex-wrap: wrap; gap: var(--s-3) var(--s-5); margin-block: var(--s-3); }
+.three-knobs__item { flex: 1 1 140px; display: flex; align-items: center; gap: var(--s-3); }
+.three-knobs__item .three-knobs__chip { flex: none; width: 56px; height: 56px; }
+.three-knobs__item p { margin: 0; font-size: 0.9rem; line-height: 1.6; }
+
+@media (max-width: 520px) {
+  .three-knobs__band--hue { --cols: 6; row-gap: var(--s-2); }
+  .three-knobs__big { min-height: 88px; }
+}
