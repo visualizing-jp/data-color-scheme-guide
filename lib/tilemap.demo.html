@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>tilemap の確認用ページ</title>
+  <link rel="stylesheet" href="../css/base.css">
+</head>
+<body>
+  <main class="page">
+    <!-- lib/tilemap.js の単体確認用。data/prefectures.json は使わず、座標を確定した確認用データをこのページに持たせている。 -->
+    <figure class="widget" id="app">
+      <p class="fig-title">タイル地図の確認：塗りを切り替える（update）</p>
+      <div class="ctl">
+        <div class="ctl-segment" id="fills" role="radiogroup" aria-label="塗り方"></div>
+        <div class="ctl-segment" id="label-modes" role="radiogroup" aria-label="県名の表示"></div>
+      </div>
+      <div id="map"></div>
+      <p class="fig-note" id="note"></p>
+    </figure>
+  </main>
+  <script type="module">
+    import { render } from './tilemap.js';
+
+    // code, 名前, 地方, x, y（座標は L4 の指示の座標表）
+    const ROWS = `
+01 北海道 hokkaido 12 0|02 青森県 tohoku 12 1|03 岩手県 tohoku 12 2|04 宮城県 tohoku 12 3
+05 秋田県 tohoku 11 2|06 山形県 tohoku 11 3|07 福島県 tohoku 11 4|08 茨城県 kanto 12 5
+09 栃木県 kanto 11 5|10 群馬県 kanto 10 5|11 埼玉県 kanto 11 6|12 千葉県 kanto 12 6
+13 東京都 kanto 11 7|14 神奈川県 kanto 10 7|15 新潟県 chubu 10 4|16 富山県 chubu 9 4
+17 石川県 chubu 8 4|18 福井県 chubu 7 5|19 山梨県 chubu 10 6|20 長野県 chubu 9 5
+21 岐阜県 chubu 8 5|22 静岡県 chubu 9 6|23 愛知県 chubu 8 6|24 三重県 kinki 7 7
+25 滋賀県 kinki 7 6|26 京都府 kinki 6 6|27 大阪府 kinki 5 7|28 兵庫県 kinki 5 6
+29 奈良県 kinki 6 7|30 和歌山県 kinki 6 8|31 鳥取県 chugoku 4 6|32 島根県 chugoku 3 6
+33 岡山県 chugoku 4 7|34 広島県 chugoku 3 7|35 山口県 chugoku 2 7|36 徳島県 shikoku 4 9
+37 香川県 shikoku 4 8|38 愛媛県 shikoku 3 8|39 高知県 shikoku 3 9|40 福岡県 kyushu 1 7
+41 佐賀県 kyushu 0 7|42 長崎県 kyushu 0 8|43 熊本県 kyushu 1 8|44 大分県 kyushu 2 8
+45 宮崎県 kyushu 2 9|46 鹿児島県 kyushu 1 9|47 沖縄県 kyushu 0 11`;
+    const prefectures = {
+      meta: { grid: { columns: 13, rows: 12 } },
+      prefectures: ROWS.split(/[|\n]/).map((s) => s.trim()).filter(Boolean).map((row) => {
+        const [code, name, region, x, y] = row.split(' ');
+        const short = name === '北海道' ? name : name.replace(/[県府都]$/, ''); // 北海道、神奈川、和歌山、鹿児島 は略さない
+        return { code, name, short, region, x: Number(x), y: Number(y) };
+      }),
+    };
+
+    // 地方ごとのグレーの濃さ（明るい 5 段階から暗い側へ）
+    const REGION_GRAY = { hokkaido: 235, tohoku: 200, kanto: 165, chubu: 130, kinki: 95, chugoku: 70, shikoku: 45, kyushu: 20 };
+    const hex = (v) => `#${[v, v, v].map((c) => Math.round(c).toString(16).padStart(2, '0')).join('')}`;
+    const byRegion = (p) => hex(REGION_GRAY[p.region]);
+    const byColumn = (p) => hex(240 - (p.x / 12) * 220);   // 西ほど明るく、東ほど暗い
+    const byRow = (p) => { const g = 15 + (p.y / 11) * 225; return hex(g); }; // 北ほど暗く、南ほど明るい
+    const blues = (p) => { // 青の濃淡（文字色の切り替えの確認用）
+      const t = Number(p.code) / 47;
+      return `#${[247 - t * 239, 251 - t * 203, 255 - t * 148].map((c) => Math.round(c).toString(16).padStart(2, '0')).join('')}`;
+    };
+    const FILLS = [
+      ['region', '地方ごとのグレー', byRegion],
+      ['column', '西から東へ', byColumn],
+      ['row', '北から南へ', byRow],
+      ['blues', '青の濃淡', blues],
+    ];
+    const LABEL_MODES = [['auto', "labels: 'auto'"], ['true', 'labels: true'], ['false', 'labels なし']];
+
+    const radios = (host, name, items, checked) => host.replaceChildren(...items.map(([value, label]) => {
+      const lab = document.createElement('label');
+      lab.innerHTML = `<input type="radio" name="${name}" value="${value}"${value === checked ? ' checked' : ''}><span>${label}</span>`;
+      return lab;
+    }));
+    radios(document.getElementById('fills'), 'fill', FILLS, 'region');
+    radios(document.getElementById('label-modes'), 'labels', LABEL_MODES, 'auto');
+
+    const host = document.getElementById('map');
+    const note = document.getElementById('note');
+    let map = null;
+    let fillFn = byRegion;
+    let labelMode = 'auto';
+    const labelsOption = () => (labelMode === 'auto' ? 'auto' : labelMode === 'true');
+
+    function draw() {
+      map?.destroy();
+      map = render(host, { prefectures, fill: fillFn, labels: labelsOption(), ariaLabel: '地方ごとにグレーの濃さを変えた、都道府県のタイル地図' });
+      note.textContent = `47 マス。labels = ${labelMode}。塗りの切り替えは update()、県名の表示の切り替えは render() をやり直している。`;
+    }
+    document.getElementById('fills').addEventListener('change', (event) => {
+      fillFn = FILLS.find(([value]) => value === event.target.value)[2];
+      map.update({ fill: fillFn }); // マスは作り直さず、色と文字色だけを差し替える
+    });
+    document.getElementById('label-modes').addEventListener('change', (event) => {
+      labelMode = event.target.value;
+      draw();
+    });
+
+    try {
+      draw();
+      document.documentElement.dataset.widgetsReady = 'true';
+    } catch (error) {
+      console.error(error);
+      host.textContent = `表示できませんでした：${error.message}`;
+    }
+  </script>
+</body>
+</html>
