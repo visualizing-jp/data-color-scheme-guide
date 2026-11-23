@@ -25,13 +25,14 @@ css/base.css            色・余白のトークン、本文の組み、共通�
 main.js                 図の登録簿。マウント点を見つけて各図を読み込み、mount する
 lib/deps.js             loadDeps()：図に渡す deps を組み立てる（main.js と各 demo.html が共用）
 lib/dom.js              ensureStyle / el / uid
-lib/color.js            色計算（シグネチャとJSDocだけのスタブ）
-lib/palettes.js         パレット（同上）
-lib/tilemap.js          都道府県タイル地図（同上）
-data/prefectures.json   都道府県データ（S0 では数値と座標が仮）
+lib/color.js            色計算（実装済み）
+lib/palettes.js         パレット（実装済み）
+lib/tilemap.js          都道府県タイル地図（実装済み）
+data/prefectures.json   都道府県データ（実装済み。数値は総務省統計局『人口推計』から転記）
 widgets/_template/      図のひな形：index.js、style.css、demo.html
-widgets/<名前>/index.js 全9図の仮スタブ（「準備中」の枠を出す。担当が置き換える）
-widgets/_placeholder.js 「準備中」の枠（main.js とスタブが使う。編集不要）
+widgets/<名前>/         9つの図（実装済み）：index.js、style.css、demo.html、必要なら自前のデータ
+widgets/_placeholder.js 「準備中」の枠（モジュールが無い図の名前があるときに、main.js が使う）
+LICENSES/Apache-2.0.txt ColorBrewer のライセンス（Apache License 2.0）の全文
 tests/                  contract.test.js（共有モジュール・データ・図の mount の契約）、page.test.js（index.html の骨組み）
                         共有モジュールの担当は tests/<モジュール名>.test.js を足す（後述）
 scripts/serve.mjs       静的ファイルサーバ（createStaticServer を export。shots.mjs も使う）
@@ -74,14 +75,14 @@ export function mount(el, deps) { … }
 `main.js` は `[data-widget]` をすべて見つけ、`./widgets/<名前>/index.js` を動的 import して `mount(el, deps)` を呼び、Promise なら解決を待ちます。
 **全図の mount が終わると `<html data-widgets-ready="true">` が付きます**（失敗して「表示できませんでした」の枠になった図があっても付きます）。
 スクリーンショットの撮影は、この印が付くのを待ってから行います。`widgets/<名前>/demo.html` も、mount が成功すると同じ印を付けます（失敗するとエラーを画面に出し、印は付けません）。
-S0 では全9図に仮のスタブが置いてあり、「図（名前）は準備中です」の枠を出します。**自分の図の `index.js` をスタブから置き換えて作ります**
-（モジュールが存在しない名前を import するとブラウザがコンソールに 404 を出すため、スタブを置いています）。
+9つの図はすべて実装済みです。新しい図を足すときは、`widgets/<名前>/index.js` を置いてから、`index.html` にマウント点を足します
+（モジュールが存在しない名前を import するとブラウザがコンソールに 404 を出すため、マウント点だけを先に置くのは避けます）。
 
 ### 図の作り方
 
-1. `widgets/_template/` の中身を、自分の `widgets/<名前>/` にコピーする（`index.js` はスタブを上書き）。
+1. `widgets/_template/` の中身を、自分の `widgets/<名前>/` にコピーする。
 2. クラス名の接頭辞 `template__` を自分の図の名前に直し、`demo.html` の `data-widget` と見出しも直す。
-3. `http://localhost:4173/widgets/<名前>/demo.html` で確認し、`/` のページでも「準備中」が消えることを確かめる。
+3. `http://localhost:4173/widgets/<名前>/demo.html` で確認し、`/` のページでも表示されることを確かめる。
 
 ## 撮影と表示検査
 
@@ -110,7 +111,7 @@ npm run shots -- widgets/quiz/demo.html        # 指定したページだけを�
 | 横スクロール | なし（`document.documentElement.scrollWidth <= window.innerWidth`） |
 | エラー表示 | 「図を表示できませんでした」の表示（`.widget-error` と、本文中のその文言）が 0 件 |
 | SVG 内の文字の最小サイズ | 表示上のサイズが 11px 以上。`svg text` ごとに「計算された `font-size` × 画面への拡大率（`viewBox` の縮尺を含む）」を測る。表示されていない文字は対象外 |
-| 準備中の個数 | 件数の表示だけで、合否には関係しない（`.widget-placeholder` の個数） |
+| 準備中の個数 | 件数の表示だけで、合否には関係しない（`.widget-placeholder` の個数。9つの図が実装済みの現在は 0） |
 
 1つでも不合格があれば、表のあとに内訳（エラーの文面や失敗した URL）を出し、終了コードを 1 にします。
 引数のパスが無いなど、実行の前提を満たさないときの終了コードは 2 です。
@@ -122,16 +123,14 @@ npm run shots -- widgets/quiz/demo.html        # 指定したページだけを�
 | 担当 | 編集してよい範囲 |
 |---|---|
 | 図 | `widgets/<自分の名前>/` の中だけ |
-| 本文 | `index.html` の自分の章の `data-prose="…"` の `<div>` の中だけ |
+| 本文 | `index.html` の自分の章の `data-prose="…"` の `<div>` と、図の直後の `data-after="…"` の `<div>`（`.prose-after`）の中だけ |
 | 共有モジュール | 自分の `lib/*.js`（または `data/prefectures.json`）と、自分のモジュールのテスト `tests/<モジュール名>.test.js`（新しいファイル）だけ。モジュール名は `color`、`palettes`、`tilemap`、`prefectures` |
 | 撮影スクリプト | `package.json` と `scripts/`。この2つは撮影スクリプトの担当だけが編集する（他の担当は、npm のコマンドを足したいときも編集しない）。`npm test` は `tests/**/*.test.js` を拾うので、テストを足すのに `package.json` の編集は要らない |
 
 - `tests/contract.test.js` と `tests/page.test.js` は骨組みのもので、他の担当は編集しません。
 - 出典の章（`data-prose="sources"`）は、第3〜5章（`ch3`〜`ch5`）の本文の担当が書きます。出典を足すときは、自分が使った出典の項目を足すだけにして、他の担当が書いた項目は触りません。
-- `lib/color.js`・`lib/palettes.js`・`lib/tilemap.js`・`data/prefectures.json` が仮の状態（スタブ、仮の数値）の間は、これらを使わない図（`cone-explorer`、`quiz`、`decision-flow`）から先に作ります。
-  ほかの図は、これらが確定してから（または確定を見込んで、呼ぶ側を契約どおりに書いておいて）仕上げます。
 
-`css/base.css`、`main.js`、`lib/deps.js`、`lib/dom.js`、`tests/contract.test.js`、`tests/page.test.js`、章の見出しとマウント点は、S0 で決めた契約です。
+`css/base.css`、`main.js`、`lib/deps.js`、`lib/dom.js`、`tests/contract.test.js`、`tests/page.test.js`、章の見出しとマウント点は、骨組みで決めた契約です。
 変更が必要なときは、勝手に直さず統括に相談します。
 
 ## 共通の操作部品（`css/base.css`）
@@ -142,18 +141,32 @@ npm run shots -- widgets/quiz/demo.html        # 指定したページだけを�
 | `.ctl-slider` | ラベル + `<input type="range">` + 値表示（`<output>`） |
 | `.ctl-segment` | 選択ボタンの組。`role="radiogroup"` の中にネイティブのラジオを置くので、矢印キーの操作はそのまま使える。狭い幅で2段に折り返しても、段の間に区切り線が見える |
 | `.ctl-toggle` | チェックボックスの切り替え |
-| `.fig-title` / `.fig-note` | 図の見出し／図の下の説明文 |
+| `.fig-title` | 図の見出し。`<p class="fig-title">` で書き、形は「図の名前：ひとことの説明」にそろえる（例：「色の3つのつまみ：色相・彩度・明度で色を作る」）。本文は図をこの名前で呼ぶ |
+| `.fig-subtitle` | 図の中の小見出し。`<p class="fig-subtitle">` で書く |
+| `.fig-note` | 図の下の説明文 |
+| `.ctl-button` | 図の中のボタン（白地・枠線つき）。図ごとの専用ボタンのクラスは作らない |
+| `.ctl-button--primary` | `.ctl-button` に重ねる修飾クラス。主要な操作に使う（濃いグレーの塗り） |
+| `.prose-after` | 図のあとに読ませる文章。`<figure data-widget="名前">` の直後に `<div class="prose-after" data-after="名前">` で置く。見た目は `.prose` と同じ |
+| `aside.note` | 補足の枠。本文より控えめな無彩色の面 |
 | `.verdict` + `--good` / `--caution` / `--bad` | 判定表示。無彩色のまま、記号「○」「△」「×」と枠線の太さ（1px／2px／4px）で区別する。記号は飾りで、判定の語（「合う」「条件つき」「誤読を招く」など）は中身の文字として必ず入れる |
 | `.swatch` | 色見本の四角。`style: { '--swatch': '#rrggbb' }` で色を付ける |
 | `.legend` | 凡例（`<ul class="legend">` の中に `<li>` を並べる） |
 
+### ページ全体の取り決め
+
+- 図の見出し（`.fig-title`）は「図の名前：ひとことの説明」の形にそろえます。
+- 各 `<figure data-widget="名前">` には `id="fig-名前"` を付けます。本文から離れた図に触れるときは、その図へのページ内リンクにし、「第4章の」のように章を添えます。
+- 2色が「見分けにくい」かどうかの目安は、ページ全体で OKLab 上の色の差（`color.deltaE`）0.06 にそろえます。知覚実験に基づく値ではなく、このページで決めた目安です（出典の章の「判定の目安」にも書いてあります）。
+- 人口増減率の期間は「2023年10月〜2024年9月の1年間」です。
+- `aria-live` の領域は、文の内容が変わったときだけ書き換えます。スライダーを動かしている最中は、止まってから（300ミリ秒ほど待って）書き換えます。
+- 幅 600px 以下の画面では、`.ctl-segment` の選択肢・`.ctl-button`・`.ctl-toggle` の押せる範囲の高さが 44px 以上になり、`.ctl-slider` のつまみも大きくなります（`css/base.css`）。
+
 マークアップの見本は `widgets/_template/index.js` にあります。`lib/dom.js` は `ensureStyle(url)`、`el(tag, attrs, children)`、`uid(prefix)` の3つです。
 `el()` は、値が `false` / `null` / `undefined` の属性は付けませんが、`aria-` で始まる属性だけは `false` も `"false"` として付けます（例：`'aria-expanded': false` → `aria-expanded="false"`）。
 
-## 共有モジュールのスタブ
+## 共有モジュール
 
-`lib/color.js`・`lib/palettes.js`・`lib/tilemap.js` は、名前・引数・戻り値を JSDoc に書いたスタブで、呼ぶと `Error('未実装: 関数名')` を投げます。
-担当が実装するまで、図からは呼ばないでください（`tests/contract.test.js` は export 名だけを検査します）。
+`lib/color.js`・`lib/palettes.js`・`lib/tilemap.js` は実装済みで、`tests/<モジュール名>.test.js` が挙動を検査しています。
 細部は各ファイルの JSDoc が正で、ここには複数の担当にまたがる取り決めだけを書きます。
 
 ### パレットと階級分け（`lib/palettes.js`）
@@ -175,7 +188,7 @@ npm run shots -- widgets/quiz/demo.html        # 指定したページだけを�
 ### 都道府県データの単位と座標（`data/prefectures.json`、`lib/tilemap.js`）
 
 - `aged65`：65歳以上人口の割合。単位は %（例：39.5）。
-- `popChange`：2023年10月1日から2024年10月1日までの人口増減率。単位は %（例：-1.87）。
+- `popChange`：2023年10月〜2024年9月の1年間の人口増減率（前年10月1日の人口に対する率）。単位は %（例：-1.87）。
 - `x`：左（西）から数えた列番号、0〜12 の整数。`y`：上（北）から数えた行番号、0〜11 の整数。同じ (x, y) を2つの都道府県が持つことはない。
 - `meta.units`（`{ aged65: "%", popChange: "%" }`）と `meta.grid`（`{ columns: 13, rows: 12 }`）に、単位とマス目の大きさを持つ。
 - `tilemap.render` は、SVG を `viewBox` つきで描き、幅は親要素いっぱいに伸縮する。`labels` が真のとき、マスの文字色は塗りの明るさに応じて濃い色か白かを自動で選ぶ。`fill` が返す色は `#rrggbb`。
@@ -184,3 +197,10 @@ npm run shots -- widgets/quiz/demo.html        # 指定したページだけを�
 
 - D3 **7.9.2**（`npm pack d3@7` で取得した tarball の `dist/d3.min.js`）。ライセンスは ISC（`vendor/d3/LICENSE`）。
   HTML では `<script src="…/vendor/d3/d3.min.js"></script>` で読み込み、モジュールは `globalThis.d3` を使います。
+
+## ライセンス
+
+- D3：ISC License（`vendor/d3/LICENSE`）。
+- ColorBrewer のパレット：Apache License 2.0。全文は [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt)（https://www.apache.org/licenses/LICENSE-2.0.txt から取得）。
+  表示すべき帰属表示の文面は `lib/palettes.js` の `ATTRIBUTION` にあり、出典の章（`index.html`）にも載せています。
+- 都道府県のデータ：総務省統計局『人口推計』をもとに加工して作成。公共データ利用規約（第1.0版）に基づき利用しています（`data/prefectures.json` の `meta`）。
