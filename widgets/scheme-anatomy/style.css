@@ -1,0 +1,33 @@
+/* 図「スキーム解剖」の専用スタイル。共通部品は css/base.css。 */
+
+.scheme-anatomy__select-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: 0.9rem;
+}
+.scheme-anatomy__select-wrap > label { font-weight: 600; }
+.scheme-anatomy__select {
+  min-height: 40px;
+  max-width: 100%;
+  padding: 0.3em 0.6em;
+  font: inherit;
+  color: var(--c-text);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+@media (max-width: 600px) { .scheme-anatomy__select { min-height: 44px; } }
+.scheme-anatomy__ctl-label { font-weight: 600; font-size: 0.9rem; }
+
+.scheme-anatomy__plot { margin-block: var(--s-3); }
+.scheme-anatomy__svg { display: block; width: 100%; height: auto; }
+
+/* viewBox の幅は表示幅に合わせてあるので、12px は画面上でもほぼ 12px（幅 390px でも 11px 以上）。 */
+.scheme-anatomy__text { font-size: 12px; fill: #4d4d4d; }
+.scheme-anatomy__tick { font-size: 12px; fill: #4d4d4d; font-variant-numeric: tabular-nums; }
+
+.scheme-anatomy__shape { margin: var(--s-3) 0 var(--s-2); font-weight: 600; }
+.scheme-anatomy__cvd { margin: var(--s-2) 0 0; }
+.scheme-anatomy__source { margin-left: 0.5em; color: var(--c-text-3); font-size: 0.85rem; }

@@ -1,0 +1,129 @@
+/* 図「判断フロー」。クラス名は .decision-flow__* 。色が出るのは色見本の帯（.decision-flow__band）だけ。 */
+
+.decision-flow__tree {
+  position: relative;
+  margin-block: var(--s-3);
+}
+
+/* 線を描く SVG は節の背面に敷く。節は不透明な面を持つので、線は節の縁で終わって見える */
+.decision-flow__lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.decision-flow__svg { display: block; max-width: none; }
+
+/* --- 配置 ----------------------------------------------------------------- */
+
+.decision-flow__tree.is-wide {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.3fr) minmax(0, 1.3fr) minmax(0, 1.6fr);
+  column-gap: 56px;   /* index.js の COLUMN_GAP と同じ値 */
+  row-gap: var(--s-5);
+  align-items: center;
+}
+.is-wide > .decision-flow__node {
+  grid-column: var(--col);
+  grid-row: var(--row);
+}
+
+.decision-flow__tree.is-narrow {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;          /* 線の上の語（高さ約 22px）が入る間隔 */
+}
+.is-narrow > .decision-flow__node {
+  margin-left: calc(var(--depth) * 28px);   /* index.js の INDENT と同じ値 */
+}
+
+/* --- 節（枠の太さと濃さで、たどった道筋を示す） ------------------------------- */
+
+.decision-flow__node {
+  --bw: 2px;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding: calc(var(--s-3) - var(--bw)) calc(var(--s-4) - var(--bw));   /* 枠が太くなっても、大きさを変えない */
+  border: var(--bw) solid var(--c-text-3);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  color: var(--c-text);
+  transition: opacity 0.15s;
+}
+.decision-flow__node[data-state="on"] { --bw: 4px; border-color: var(--c-ink); }
+.decision-flow__node[data-state="off"] { --bw: 1px; border-color: var(--c-line-strong); opacity: 0.45; }
+
+.decision-flow__node p { margin: 0; }
+.decision-flow__text { font-weight: 700; line-height: 1.6; }
+.decision-flow__tag { color: var(--c-text-2); font-size: 0.85rem; font-weight: 700; line-height: 1.5; }
+
+.decision-flow__node--start { background: var(--c-surface-2); }
+.decision-flow__node--start .decision-flow__text { text-align: center; }
+
+.decision-flow__segment { margin-top: var(--s-3); display: flex; }
+.decision-flow__node[data-locked] .decision-flow__segment { border-color: var(--c-line); background: var(--c-line); }
+
+.decision-flow__name { font-size: 1.05rem; font-weight: 700; line-height: 1.5; }
+
+/* 色見本の帯：5色が隙間なく並ぶ */
+.decision-flow__band {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  height: 28px;
+  margin-block: var(--s-2);
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+.decision-flow__band > span { background: var(--swatch); }
+
+.decision-flow__desc { line-height: 1.6; }
+
+.decision-flow__facts { margin: var(--s-2) 0 0; font-size: 0.9rem; line-height: 1.6; }
+.decision-flow__facts dt { margin-top: var(--s-2); color: var(--c-text-2); font-weight: 700; }
+.decision-flow__facts dd { margin: 0; }
+
+/* --- 線 ------------------------------------------------------------------- */
+
+.decision-flow__edge { fill: none; stroke-linejoin: round; stroke-linecap: butt; }
+.decision-flow__arrow { stroke: none; }
+
+.decision-flow__edge[data-state="idle"] { stroke: var(--c-text-3); stroke-width: 2px; }
+.decision-flow__edge[data-state="on"]   { stroke: var(--c-ink); stroke-width: 4px; }
+.decision-flow__edge[data-state="off"]  { stroke: var(--c-line-strong); stroke-width: 1.5px; opacity: 0.45; }
+.decision-flow__arrow[data-state="idle"] { fill: var(--c-text-3); }
+.decision-flow__arrow[data-state="on"]   { fill: var(--c-ink); }
+.decision-flow__arrow[data-state="off"]  { fill: var(--c-line-strong); opacity: 0.45; }
+
+/* 線の上の「はい」「いいえ」 */
+.decision-flow__pill {
+  position: absolute;
+  z-index: 2;
+  padding: 0 0.5em;
+  border: 1px solid var(--c-text-3);
+  border-radius: 999px;
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.is-wide > .decision-flow__pill { transform: translate(-50%, calc(-100% - 3px)); }   /* 線の少し上に、中心を合わせる */
+.is-narrow > .decision-flow__pill { transform: translateY(calc(-100% - 4px)); }       /* 節の左上の、すぐ上 */
+.decision-flow__pill[data-state="on"] { border-width: 2px; background: var(--c-ink); border-color: var(--c-ink); color: var(--c-on-ink); font-weight: 700; }
+.decision-flow__pill[data-state="off"] { border-color: var(--c-line-strong); opacity: 0.45; }
+
+/* --- 結論の文・最初からボタン --------------------------------------------- */
+
+.decision-flow__answer {
+  margin: var(--s-3) 0 0;
+  padding: var(--s-3) var(--s-4);
+  min-height: 4.2em;     /* 文が入れ替わっても、下の部品が動かない高さ */
+  border-left: 4px solid var(--c-ink);
+  background: var(--c-surface-2);
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .decision-flow__node { transition: none; }
+}

@@ -1,0 +1,9 @@
+/* 図の専用スタイル。クラス名は図の名前を接頭辞にする（BEM 風：.<名前>__<部品>）。
+   共通の部品（.ctl-* / .fig-* / .verdict / .swatch / .legend）は css/base.css にあるので、ここには書かない。 */
+
+.template__plot { margin-block: var(--s-3); }
+
+.template__svg { display: block; width: 100%; height: auto; }
+
+/* viewBox の幅は表示幅に合わせてあるので、12px は画面上でもほぼ 12px（幅 390px の画面でも 11px 以上）。 */
+.template__value { font-size: 12px; fill: #4d4d4d; }

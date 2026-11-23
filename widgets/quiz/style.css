@@ -1,0 +1,75 @@
+/* 図「理解度クイズ」の専用スタイル。ページのUIは無彩色。色が出るのは色見本の帯だけ。 */
+
+.quiz__progress {
+  margin: 0 0 var(--s-3);
+  color: var(--c-text-2);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.quiz__prompt {
+  margin: 0 0 var(--s-4);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+.quiz__prompt:focus { outline: none; }
+.quiz__prompt:focus-visible { outline: 3px solid var(--c-ink); outline-offset: 4px; }
+
+.quiz__choices {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quiz__choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--c-line-strong);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.quiz__choice:hover:not(:disabled) { background: var(--c-surface-2); }
+.quiz__choice:disabled { cursor: default; color: var(--c-text); }
+
+.quiz__choice-name { font-weight: 700; }
+
+/* 選んだあと：どれを選んだか・どれが正解かを、記号と文字、枠線の形で示す */
+.quiz__choice--correct { border: 3px solid var(--c-ink); padding: calc(var(--s-2) - 2px) calc(var(--s-4) - 2px); }
+.quiz__choice--chosen { border: 3px dashed var(--c-ink); padding: calc(var(--s-2) - 2px) calc(var(--s-4) - 2px); background: var(--c-surface-2); }
+.quiz__choice--chosen.quiz__choice--correct { border-style: solid; }
+
+.quiz__tags { display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-2); width: 100%; font-size: 0.875rem; font-weight: 700; }
+
+/* 色見本の帯：5つの色見本を隙間なく並べる */
+.quiz__strip { display: inline-flex; flex: none; }
+.quiz__strip .swatch { width: 2em; height: 1.5em; border-radius: 0; margin-left: -1px; }
+.quiz__strip .swatch:first-child { margin-left: 0; }
+
+.quiz__result { margin-top: var(--s-4); }
+.quiz__result:empty { display: none; }
+.quiz__result .verdict { display: flex; margin: 0 0 var(--s-3); font-weight: 700; }
+.quiz__result p { margin: 0 0 var(--s-3); }
+.quiz__result p:last-child { margin-bottom: 0; }
+
+.quiz__actions { margin-top: var(--s-4); }
+
+.quiz__score { margin: 0 0 var(--s-3); font-size: 1.25rem; font-weight: 700; line-height: 1.5; }
+.quiz__score:focus { outline: none; }
+.quiz__score:focus-visible { outline: 3px solid var(--c-ink); outline-offset: 4px; }
+
+@media (max-width: 600px) {
+  .quiz__choice { padding-inline: var(--s-3); }
+  .quiz__choice--correct, .quiz__choice--chosen { padding-inline: calc(var(--s-3) - 2px); }
+}

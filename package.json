@@ -1,0 +1,12 @@
+{
+  "name": "data-color-scheme-guide",
+  "version": "0.0.0",
+  "private": true,
+  "description": "データの性質に合ったカラースキームの選び方（初学者向けスクロール型解説ページ）",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.js\"",
+    "serve": "node scripts/serve.mjs",
+    "shots": "node scripts/shots.mjs"
+  }
+}
