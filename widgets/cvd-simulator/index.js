@@ -13,8 +13,13 @@ const TYPES = [
 ];
 const TYPE_LABEL = Object.fromEntries(TYPES.map((t) => [t.value, t.label]));
 
-/** シミュレーション後の色差（OKLab 上の距離）がこの値未満の2色を「見分けにくい組」と数える。 */
+/**
+ * 「見分けにくい組」の基準。次の2つを両方満たす2色の組を数える。
+ *   (a) シミュレーション後の色差（OKLab 上の距離）が THRESHOLD 未満
+ *   (b) シミュレーション後の色差が、もとの色差の SHRINK 倍未満（見え方の違いで、差が大きく縮んだ）
+ */
 const THRESHOLD = 0.06;
+const SHRINK = 0.6;
 const HUE_STEP = 15;
 const HUE_COUNT = 360 / HUE_STEP;
 
@@ -120,7 +125,7 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
     summary,
     h('p', { class: 'fig-note' },
       'シミュレーションは Machado ほか（2009）の方法による目安です。実際の見え方には個人差があります。'
-      + '「見分けにくい組」は、シミュレーション後の色の差（OKLab 上の距離）が 0.06 未満の組です。'),
+      + '「見分けにくい組」は、シミュレーション後の色の差（OKLab 上の距離）が 0.06 未満で、もとの差の6割未満に縮んだ組です。'),
   ]);
   el.replaceChildren(root);
 
@@ -129,13 +134,16 @@ export function mount(el, { color, palettes, prefectures, tilemap }) {
     ? hex
     : color.simulateCvd(hex, state.type, state.severity / 100));
 
-  /** 帯の中のすべての2色の組のうち、シミュレーション後の色差が THRESHOLD 未満のもの。 */
+  /** 帯の中のすべての2色の組のうち、見分けにくい組（THRESHOLD と SHRINK の両方を満たすもの）。 */
   function hardPairs(colors) {
     const sim = colors.map(simulate);
     const pairs = [];
     for (let i = 0; i < sim.length; i += 1) {
       for (let j = i + 1; j < sim.length; j += 1) {
-        if (color.deltaE(sim[i], sim[j]) < THRESHOLD) pairs.push({ i, j, a: sim[i], b: sim[j] });
+        const after = color.deltaE(sim[i], sim[j]);
+        if (after < THRESHOLD && after < SHRINK * color.deltaE(colors[i], colors[j])) {
+          pairs.push({ i, j, a: sim[i], b: sim[j] });
+        }
       }
     }
     return pairs;
