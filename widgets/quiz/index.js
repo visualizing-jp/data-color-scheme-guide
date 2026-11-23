@@ -98,7 +98,7 @@ export async function mount(el) {
         ]));
 
     const last = state.index === total - 1;
-    const next = h('button', { type: 'button', class: 'quiz__btn', onclick: last ? showFinal : advance },
+    const next = h('button', { type: 'button', class: 'ctl-button ctl-button--primary', onclick: last ? showFinal : advance },
       last ? '結果を見る' : '次の問題へ');
     actions.replaceChildren(next);
     next.focus({ preventScroll: true }); // 押したボタンは操作不能になるので、キーボードの位置を次へ送る
@@ -115,7 +115,7 @@ export async function mount(el) {
     const score = h('p', { class: 'quiz__score', tabindex: '-1' }, `${total}問中${state.score}問 正解`);
     body.replaceChildren();
     result.replaceChildren(score, h('p', {}, message));
-    const again = h('button', { type: 'button', class: 'quiz__btn', onclick: restart }, 'もう一度');
+    const again = h('button', { type: 'button', class: 'ctl-button', onclick: restart }, 'もう一度');
     actions.replaceChildren(again);
     again.focus({ preventScroll: true });
   }

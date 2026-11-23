@@ -1,7 +1,7 @@
 // 図「錐体エクスプローラ」（第1章）。
 // 第1部：波長を動かして、L・M・S の3種類の錐体の反応量を見る。
 // 第2部：黄色の単色光と、緑＋赤の混合光で、錐体の反応量が同じになる（＝同じ色に見える）ことを確かめる。
-// データ（cones.json）は Stockman & Sharpe (2000) の2°錐体分光感度と CIE 1931 等色関数を 390〜700nm・5nm刻みで持つ。
+// データ（cones.json）は Stockman & Sharpe (2000) の2°視野の錐体分光感度と CIE 1931 等色関数を 390〜700nm・5nm刻みで持つ。
 import { ensureStyle, el as h, uid } from '../../lib/dom.js';
 
 ensureStyle(new URL('./style.css', import.meta.url));
@@ -28,7 +28,14 @@ function amountWord(value) {
   return 'たくさん';
 }
 
-/** XYZ（CIE 1931）→ 画面の近似色。負の成分を 0 に切り、最大成分を 1 にそろえ、sRGB のガンマをかける。 */
+/**
+ * XYZ（CIE 1931）→ 画面の近似色。負の成分を 0 に切り、最大成分を 1 にそろえ、sRGB のガンマをかける。
+ *
+ * lib/color.js を使わずに、この図の中で計算している。単色光（スペクトル上の純粋な色）は
+ * sRGB の色域の外にあり、色空間の変換だけでは表示できる色にならない。そのため、この図に固有の
+ * 近似（色域の外へ出た負の成分を 0 に切り、最大成分を 1 にそろえて明るさを保つ）が要る。
+ * lib/color.js の色域への収め方（明度と色相を保って彩度を下げる）とは目的が違うので、共有せずにここへ置く。
+ */
 function xyzToHex([x, y, z]) {
   const lin = [
     3.2406 * x - 1.5372 * y - 0.4986 * z,
@@ -120,14 +127,14 @@ export async function mount(el, { d3 }) {
   const yellowSwatch = h('span', { class: 'swatch cone-explorer__light-swatch' });
   const diffText = h('p', { class: 'cone-explorer__diff' });
   const verdict = h('span');
-  const btnMatch = h('button', { type: 'button', class: 'cone-explorer__btn' }, 'ぴったり合わせる');
-  const btnReset = h('button', { type: 'button', class: 'cone-explorer__btn' }, '最初に戻す');
+  const btnMatch = h('button', { type: 'button', class: 'ctl-button ctl-button--primary' }, 'ぴったり合わせる');
+  const btnReset = h('button', { type: 'button', class: 'ctl-button' }, '最初に戻す');
 
   const legendKey = (kind) => h('span', { class: `cone-explorer__key cone-explorer__key--${kind}`, 'aria-hidden': 'true' });
 
   el.replaceChildren(
     // 第1部
-    h('h3', { class: 'fig-title' }, '波長を動かして、3種類の錐体の反応を見る'),
+    h('p', { class: 'fig-title' }, '錐体エクスプローラ：波長を動かして、3種類の錐体の反応を見る'),
     h('p', { class: 'cone-explorer__lead' }, '光の波長を変えると、L・M・Sの錐体の反応量が変わります。'),
     h('div', { class: 'cone-explorer__top' }, [
       plot,
@@ -144,7 +151,7 @@ export async function mount(el, { d3 }) {
       CONES.map((c) => bars1[c].row)),
 
     // 第2部
-    h('h3', { class: 'fig-title cone-explorer__part2' }, 'ちがう光でも、同じ色に見える'),
+    h('p', { class: 'fig-subtitle cone-explorer__part2' }, 'ちがう光でも、同じ色に見える'),
     h('p', { class: 'cone-explorer__lead' },
       '黄色の光（580nm）と、緑の光（550nm）＋赤い光（630nm）。成分は違いますが、混ぜ方しだいで錐体の反応量はほぼ同じになります。'),
     h('div', { class: 'cone-explorer__pair' }, [
@@ -175,11 +182,11 @@ export async function mount(el, { d3 }) {
     h('p', { class: 'cone-explorer__status', role: 'status' }, verdict),
     h('div', { class: 'ctl' }, [btnMatch, btnReset]),
     h('p', { class: 'fig-note' },
-      '錐体の感度は Stockman & Sharpe (2000) の2°錐体分光感度（エネルギー基準、各錐体の最大値を1に正規化）によります。画面では、単色光の色を完全には再現できません。色見本は近似です。'),
+      '錐体の感度は Stockman & Sharpe (2000) の2°視野の錐体分光感度（エネルギー基準、各錐体の最大値を1に正規化）によります。画面では、単色光の色を完全には再現できません。色見本は近似です。'),
   );
 
   // ---- 第1部の曲線（SVG）---------------------------------------------------
-  const PAD = { top: 26, right: 14, bottom: 46, left: 14 };
+  const PAD = { top: 44, right: 14, bottom: 46, left: 14 };
   const viewWidth = () => {
     const width = plot.clientWidth;
     return width > 0 ? Math.min(760, Math.max(240, Math.round(width))) : 600;
@@ -190,8 +197,8 @@ export async function mount(el, { d3 }) {
   const svg = d3.select(plot).append('svg')
     .attr('class', 'cone-explorer__svg')
     .attr('role', 'img')
-    .attr('aria-label', 'スペクトルの帯の上に、L・M・Sの錐体の感度曲線を重ねた図。感度が最大になる波長はLが'
-      + `${peaks.L}nm、Mが${peaks.M}nm、Sが${peaks.S}nmです。`);
+    .attr('aria-label', 'スペクトルの帯の上に、L・M・Sの錐体の感度曲線を重ねた図。感度が最大になる波長は、Lが'
+      + `${peaks.L}nm付近、Mが${peaks.M}nm付近、Sが${peaks.S}nm付近です。`);
   const gBand = svg.append('g');
   const gCurves = svg.append('g');
   const gMarker = svg.append('g');
@@ -228,12 +235,14 @@ export async function mount(el, { d3 }) {
 
     // 感度が最大になる波長の縦線とラベル
     const peakG = gBand.append('g').attr('class', 'cone-explorer__peaks');
-    const anchors = { S: 'end', M: 'end', L: 'start' }; // 狭い幅でもラベルが重ならない向き
+    // 狭い幅でもラベルが重ならず、左端で切れないように、S だけ1段上に置いて右向きにする
+    const anchors = { S: 'start', M: 'end', L: 'start' };
+    const labelY = { S: PAD.top - 28, M: PAD.top - 10, L: PAD.top - 10 };
     for (const c of CONES) {
       const px = x(peaks[c]);
-      peakG.append('line').attr('x1', px).attr('x2', px).attr('y1', PAD.top - 6).attr('y2', base);
-      peakG.append('text').attr('x', px + (anchors[c] === 'start' ? 4 : -4)).attr('y', PAD.top - 10)
-        .attr('text-anchor', anchors[c]).text(`${c} ${peaks[c]}nm`);
+      peakG.append('line').attr('x1', px).attr('x2', px).attr('y1', labelY[c] + 4).attr('y2', base);
+      peakG.append('text').attr('x', px + (anchors[c] === 'start' ? 4 : -4)).attr('y', labelY[c])
+        .attr('text-anchor', anchors[c]).text(`${c} ${peaks[c]}nm付近`);
     }
 
     // 感度曲線（グレーの濃淡と線種で区別）

@@ -146,19 +146,3 @@ figure.widget[data-widget="cone-explorer"] {
 
 .cone-explorer__diff { margin: var(--s-2) 0 var(--s-3); font-size: 0.875rem; color: var(--c-text-2); font-variant-numeric: tabular-nums; }
 .cone-explorer__status { margin: 0; }
-
-/* ボタン（base.css に共通のボタンが無いので、トークンだけ使って組む） */
-.cone-explorer__btn {
-  min-height: 40px;
-  padding: 0.45em 1.1em;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--c-text);
-  background: var(--c-surface);
-  border: 1px solid var(--c-line-strong);
-  border-radius: var(--radius);
-  cursor: pointer;
-}
-.cone-explorer__btn:hover { background: var(--c-surface-2); }
-.cone-explorer__btn:active { background: var(--c-line); }
