@@ -18,7 +18,8 @@ const MSG_OUT_OF_GAMUT = '画面で表示できない色相は、彩度を下げ
  * @param {{ color: object }} deps
  */
 export function mount(el, { color }) {
-  const state = { h: 250, c: 0.12, l: 0.6, gray: false };
+  // c は表示している彩度、wantC は読者が彩度のスライダーで選んだ値（希望の値）。c は wantC を、そのときの上限に収めたもの。
+  const state = { h: 250, c: 0.12, wantC: 0.12, l: 0.6, gray: false };
 
   // --- 操作部品 ---------------------------------------------------------
   const hueId = uid('knobs-hue');
@@ -111,10 +112,10 @@ export function mount(el, { color }) {
   }
 
   function render() {
-    // 彩度の上限は、明度と色相で決まる。上限が下がったら値も合わせる。
+    // 彩度の上限は、明度と色相で決まる。上限が下がったら表示だけを上限に合わせ、上限が戻ったら希望の値に戻す。
     const max = floor3(color.maxChroma(state.l, state.h));
     chromaIn.max = String(max);
-    if (state.c > max) state.c = max;
+    state.c = Math.min(state.wantC, max);
     chromaIn.value = String(state.c);
 
     const hex = color.oklchToHex({ l: state.l, c: state.c, h: state.h });
@@ -162,7 +163,7 @@ export function mount(el, { color }) {
 
   // --- イベント ---------------------------------------------------------
   const onHue = () => { state.h = Number(hueIn.value); render(); };
-  const onChroma = () => { state.c = Number(chromaIn.value); render(); };
+  const onChroma = () => { state.wantC = Number(chromaIn.value); render(); };
   const onLight = () => { state.l = Number(lightIn.value) / 100; render(); };
   const onGray = () => {
     state.gray = grayIn.checked;
