@@ -9,8 +9,21 @@
       "columns": 13,
       "rows": 12
     },
-    "sources": [],
-    "note": "数値と座標は仮の値（後続の作業で確定）"
+    "sources": [
+      {
+        "name": "人口推計（2024年（令和6年）10月1日現在）結果の概要",
+        "publisher": "総務省統計局",
+        "url": "https://www.stat.go.jp/data/jinsui/2024np/index.html",
+        "fileUrl": "https://www.stat.go.jp/data/jinsui/2024np/pdf/2024gaiyou.pdf",
+        "tables": "表6「都道府県別人口増減率」（2024年列）、表10「都道府県、年齢３区分別人口の割合」（2024年の65歳以上列）",
+        "publishedAt": "2025-04-14",
+        "accessedAt": "2026-11-23",
+        "license": "公共データ利用規約（第1.0版）に準拠。出典を記載し、加工した旨を明記すれば商用利用も可",
+        "licenseUrl": "https://www.stat.go.jp/info/riyou.html",
+        "credit": "出典：「人口推計（2024年（令和6年）10月1日現在）結果の概要」（総務省統計局）https://www.stat.go.jp/data/jinsui/2024np/index.html （PDF: https://www.stat.go.jp/data/jinsui/2024np/pdf/2024gaiyou.pdf、表6・表10）（2026年11月23日に利用）を加工して作成。人口増減率は2023年10月～2024年9月の前年10月1日人口に対する増減率。"
+      }
+    ],
+    "note": "aged65（65歳以上人口の割合）と popChange（人口増減率）の数値は、上記の原典PDFの表6・表10から転記した（小数桁も原典のとおり）。x・y はタイル地図用に作った座標で、統計局の値ではない。地方区分は一般的な八地方区分（三重県は近畿、山梨県・新潟県は中部、沖縄県は九州に含める）であり、統計局の統計表の区分（三重県を東海に含める）とは異なる。"
   },
   "regions": [
     {
@@ -43,7 +56,7 @@
     },
     {
       "id": "kyushu",
-      "name": "九州"
+      "name": "九州・沖縄"
     }
   ],
   "prefectures": [
@@ -52,9 +65,9 @@
       "name": "北海道",
       "short": "北海道",
       "region": "hokkaido",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
+      "aged65": 33.3,
+      "popChange": -0.97,
+      "x": 12,
       "y": 0
     },
     {
@@ -62,460 +75,460 @@
       "name": "青森県",
       "short": "青森",
       "region": "tohoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 35.7,
+      "popChange": -1.66,
+      "x": 12,
+      "y": 1
     },
     {
       "code": "03",
       "name": "岩手県",
       "short": "岩手",
       "region": "tohoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 35.4,
+      "popChange": -1.57,
+      "x": 12,
+      "y": 2
     },
     {
       "code": "04",
       "name": "宮城県",
       "short": "宮城",
       "region": "tohoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 29.6,
+      "popChange": -0.73,
+      "x": 12,
+      "y": 3
     },
     {
       "code": "05",
       "name": "秋田県",
       "short": "秋田",
       "region": "tohoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 39.5,
+      "popChange": -1.87,
+      "x": 11,
+      "y": 2
     },
     {
       "code": "06",
       "name": "山形県",
       "short": "山形",
       "region": "tohoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 35.6,
+      "popChange": -1.49,
+      "x": 11,
+      "y": 3
     },
     {
       "code": "07",
       "name": "福島県",
       "short": "福島",
       "region": "tohoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 33.7,
+      "popChange": -1.35,
+      "x": 11,
+      "y": 4
     },
     {
       "code": "08",
       "name": "茨城県",
       "short": "茨城",
       "region": "kanto",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 30.9,
+      "popChange": -0.64,
+      "x": 12,
+      "y": 5
     },
     {
       "code": "09",
       "name": "栃木県",
       "short": "栃木",
       "region": "kanto",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 30.5,
+      "popChange": -0.66,
+      "x": 11,
+      "y": 5
     },
     {
       "code": "10",
       "name": "群馬県",
       "short": "群馬",
       "region": "kanto",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 31.1,
+      "popChange": -0.62,
+      "x": 10,
+      "y": 5
     },
     {
       "code": "11",
       "name": "埼玉県",
       "short": "埼玉",
       "region": "kanto",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 27.5,
+      "popChange": 0.01,
+      "x": 11,
+      "y": 6
     },
     {
       "code": "12",
       "name": "千葉県",
       "short": "千葉",
       "region": "kanto",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 28.1,
+      "popChange": -0.08,
+      "x": 12,
+      "y": 6
     },
     {
       "code": "13",
       "name": "東京都",
       "short": "東京",
       "region": "kanto",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 22.7,
+      "popChange": 0.66,
+      "x": 11,
+      "y": 7
     },
     {
       "code": "14",
       "name": "神奈川県",
       "short": "神奈川",
       "region": "kanto",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 26.0,
+      "popChange": -0.05,
+      "x": 10,
+      "y": 7
     },
     {
       "code": "15",
       "name": "新潟県",
       "short": "新潟",
       "region": "chubu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 34.2,
+      "popChange": -1.29,
+      "x": 10,
+      "y": 4
     },
     {
       "code": "16",
       "name": "富山県",
       "short": "富山",
       "region": "chubu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 33.2,
+      "popChange": -1.0,
+      "x": 9,
+      "y": 4
     },
     {
       "code": "17",
       "name": "石川県",
       "short": "石川",
       "region": "chubu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 30.7,
+      "popChange": -1.0,
+      "x": 8,
+      "y": 4
     },
     {
       "code": "18",
       "name": "福井県",
       "short": "福井",
       "region": "chubu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 31.8,
+      "popChange": -0.77,
+      "x": 7,
+      "y": 5
     },
     {
       "code": "19",
       "name": "山梨県",
       "short": "山梨",
       "region": "chubu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 32.0,
+      "popChange": -0.63,
+      "x": 10,
+      "y": 6
     },
     {
       "code": "20",
       "name": "長野県",
       "short": "長野",
       "region": "chubu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 32.9,
+      "popChange": -0.84,
+      "x": 9,
+      "y": 5
     },
     {
       "code": "21",
       "name": "岐阜県",
       "short": "岐阜",
       "region": "chubu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 31.4,
+      "popChange": -0.81,
+      "x": 8,
+      "y": 5
     },
     {
       "code": "22",
       "name": "静岡県",
       "short": "静岡",
       "region": "chubu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 31.2,
+      "popChange": -0.8,
+      "x": 9,
+      "y": 6
     },
     {
       "code": "23",
       "name": "愛知県",
       "short": "愛知",
       "region": "chubu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 25.8,
+      "popChange": -0.23,
+      "x": 8,
+      "y": 6
     },
     {
       "code": "24",
       "name": "三重県",
       "short": "三重",
       "region": "kinki",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 30.9,
+      "popChange": -0.94,
+      "x": 7,
+      "y": 7
     },
     {
       "code": "25",
       "name": "滋賀県",
       "short": "滋賀",
       "region": "kinki",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 27.3,
+      "popChange": -0.32,
+      "x": 7,
+      "y": 6
     },
     {
       "code": "26",
       "name": "京都府",
       "short": "京都",
       "region": "kinki",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 29.8,
+      "popChange": -0.6,
+      "x": 6,
+      "y": 6
     },
     {
       "code": "27",
       "name": "大阪府",
       "short": "大阪",
       "region": "kinki",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 27.6,
+      "popChange": -0.07,
+      "x": 5,
+      "y": 7
     },
     {
       "code": "28",
       "name": "兵庫県",
       "short": "兵庫",
       "region": "kinki",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 30.2,
+      "popChange": -0.61,
+      "x": 5,
+      "y": 6
     },
     {
       "code": "29",
       "name": "奈良県",
       "short": "奈良",
       "region": "kinki",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 32.9,
+      "popChange": -0.8,
+      "x": 6,
+      "y": 7
     },
     {
       "code": "30",
       "name": "和歌山県",
       "short": "和歌山",
       "region": "kinki",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 34.5,
+      "popChange": -1.34,
+      "x": 6,
+      "y": 8
     },
     {
       "code": "31",
       "name": "鳥取県",
       "short": "鳥取",
       "region": "chugoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 33.7,
+      "popChange": -1.16,
+      "x": 4,
+      "y": 6
     },
     {
       "code": "32",
       "name": "島根県",
       "short": "島根",
       "region": "chugoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 35.2,
+      "popChange": -1.16,
+      "x": 3,
+      "y": 6
     },
     {
       "code": "33",
       "name": "岡山県",
       "short": "岡山",
       "region": "chugoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 31.2,
+      "popChange": -0.84,
+      "x": 4,
+      "y": 7
     },
     {
       "code": "34",
       "name": "広島県",
       "short": "広島",
       "region": "chugoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 30.4,
+      "popChange": -0.86,
+      "x": 3,
+      "y": 7
     },
     {
       "code": "35",
       "name": "山口県",
       "short": "山口",
       "region": "chugoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 35.5,
+      "popChange": -1.26,
+      "x": 2,
+      "y": 7
     },
     {
       "code": "36",
       "name": "徳島県",
       "short": "徳島",
       "region": "shikoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 35.7,
+      "popChange": -1.36,
+      "x": 4,
+      "y": 9
     },
     {
       "code": "37",
       "name": "香川県",
       "short": "香川",
       "region": "shikoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 32.8,
+      "popChange": -0.93,
+      "x": 4,
+      "y": 8
     },
     {
       "code": "38",
       "name": "愛媛県",
       "short": "愛媛",
       "region": "shikoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 34.5,
+      "popChange": -1.22,
+      "x": 3,
+      "y": 8
     },
     {
       "code": "39",
       "name": "高知県",
       "short": "高知",
       "region": "shikoku",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 36.6,
+      "popChange": -1.56,
+      "x": 3,
+      "y": 9
     },
     {
       "code": "40",
       "name": "福岡県",
       "short": "福岡",
       "region": "kyushu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 28.6,
+      "popChange": -0.21,
+      "x": 1,
+      "y": 7
     },
     {
       "code": "41",
       "name": "佐賀県",
       "short": "佐賀",
       "region": "kyushu",
-      "aged65": 0,
-      "popChange": 0,
+      "aged65": 32.0,
+      "popChange": -0.82,
       "x": 0,
-      "y": 0
+      "y": 7
     },
     {
       "code": "42",
       "name": "長崎県",
       "short": "長崎",
       "region": "kyushu",
-      "aged65": 0,
-      "popChange": 0,
+      "aged65": 34.7,
+      "popChange": -1.21,
       "x": 0,
-      "y": 0
+      "y": 8
     },
     {
       "code": "43",
       "name": "熊本県",
       "short": "熊本",
       "region": "kyushu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 32.6,
+      "popChange": -0.69,
+      "x": 1,
+      "y": 8
     },
     {
       "code": "44",
       "name": "大分県",
       "short": "大分",
       "region": "kyushu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 34.4,
+      "popChange": -1.0,
+      "x": 2,
+      "y": 8
     },
     {
       "code": "45",
       "name": "宮崎県",
       "short": "宮崎",
       "region": "kyushu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 33.9,
+      "popChange": -0.89,
+      "x": 2,
+      "y": 9
     },
     {
       "code": "46",
       "name": "鹿児島県",
       "short": "鹿児島",
       "region": "kyushu",
-      "aged65": 0,
-      "popChange": 0,
-      "x": 0,
-      "y": 0
+      "aged65": 34.2,
+      "popChange": -1.1,
+      "x": 1,
+      "y": 9
     },
     {
       "code": "47",
       "name": "沖縄県",
       "short": "沖縄",
       "region": "kyushu",
-      "aged65": 0,
-      "popChange": 0,
+      "aged65": 24.2,
+      "popChange": -0.11,
       "x": 0,
-      "y": 0
+      "y": 11
     }
   ]
 }
