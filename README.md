@@ -9,6 +9,7 @@
 ```sh
 npm run serve      # 依存なしの静的サーバ。http://localhost:4173/ を開く（PORT=8080 npm run serve で変更可）
 npm test           # node --test "tests/**/*.test.js"
+npm run shots      # 撮影と表示検査（下の「撮影と表示検査」）
 ```
 
 - ページ全体：`http://localhost:4173/`
@@ -33,7 +34,8 @@ widgets/<名前>/index.js 全9図の仮スタブ（「準備中」の枠を出�
 widgets/_placeholder.js 「準備中」の枠（main.js とスタブが使う。編集不要）
 tests/                  contract.test.js（共有モジュール・データ・図の mount の契約）、page.test.js（index.html の骨組み）
                         共有モジュールの担当は tests/<モジュール名>.test.js を足す（後述）
-scripts/serve.mjs       静的ファイルサーバ
+scripts/serve.mjs       静的ファイルサーバ（createStaticServer を export。shots.mjs も使う）
+scripts/shots.mjs       撮影と表示検査（npm run shots）
 vendor/d3/              同梱した D3 と LICENSE
 ```
 
@@ -80,6 +82,38 @@ S0 では全9図に仮のスタブが置いてあり、「図（名前）は準�
 1. `widgets/_template/` の中身を、自分の `widgets/<名前>/` にコピーする（`index.js` はスタブを上書き）。
 2. クラス名の接頭辞 `template__` を自分の図の名前に直し、`demo.html` の `data-widget` と見出しも直す。
 3. `http://localhost:4173/widgets/<名前>/demo.html` で確認し、`/` のページでも「準備中」が消えることを確かめる。
+
+## 撮影と表示検査
+
+レビュー担当と検証担当が、1コマンドでスクリーンショットを撮り、表示の問題を機械的に見つけるためのスクリプト（`scripts/shots.mjs`）です。
+
+```sh
+npm run shots                                  # index.html と、すべての demo.html を撮影・検査する
+npm run shots -- widgets/quiz/demo.html        # 指定したページだけを対象にする（複数指定できる）
+```
+
+- 静的ファイルサーバ（`scripts/serve.mjs` の `createStaticServer`）を空いているポートで自分で起動し、終わったら止めます。`npm run serve` を起動しておく必要はありません。
+- 対象は `index.html`、`widgets/*/demo.html`（ひな形の `widgets/_template/demo.html` を含む）、`lib/*.demo.html` です。
+- 各ページを幅 1280px と 390px で開き、`<html data-widgets-ready="true">` が付くのを待ちます（15 秒で付かなければ不合格）。そのあと、ページ全体の画像を `screenshots/<ページ名>-<幅>.png` に保存します。
+  ページ名はパスの `/` を `-` にして `.html` を除いたもの（例：`widgets/quiz/demo.html` → `widgets-quiz-demo-1280.png`）です。
+  `index.html` では、各図（`[data-widget]`）を要素単位でも `screenshots/index-<幅>-<図の名前>.png` に撮ります。
+- 撮影は `prefers-reduced-motion: reduce` の状態で行います（JS の演出を止めて、撮影を安定させるため）。
+- `screenshots/` は `.gitignore` に入れてあり、コミットしません。同じページ・幅の古い画像は、撮影のたびに消してから撮ります。
+- Playwright は `package.json` に加えていません。環境に導入済みのものを `require('playwright')` で読み込みます。読み込めない環境では、その旨を出して終了します。
+
+各ページ・各幅で次を検査し、結果を表にして標準出力に出します。
+
+| 検査 | 合格の条件 |
+|---|---|
+| コンソールのエラー | 0 件（`console.error` と、捕捉されなかった例外の件数） |
+| 失敗したリクエスト | 0 件（通信の失敗と、HTTP 400 以上の応答の件数。404 はコンソールのエラーにも数えられる） |
+| 横スクロール | なし（`document.documentElement.scrollWidth <= window.innerWidth`） |
+| エラー表示 | 「図を表示できませんでした」の表示（`.widget-error` と、本文中のその文言）が 0 件 |
+| SVG 内の文字の最小サイズ | 表示上のサイズが 11px 以上。`svg text` ごとに「計算された `font-size` × 画面への拡大率（`viewBox` の縮尺を含む）」を測る。表示されていない文字は対象外 |
+| 準備中の個数 | 件数の表示だけで、合否には関係しない（`.widget-placeholder` の個数） |
+
+1つでも不合格があれば、表のあとに内訳（エラーの文面や失敗した URL）を出し、終了コードを 1 にします。
+引数のパスが無いなど、実行の前提を満たさないときの終了コードは 2 です。
 
 ## 担当範囲の取り決め
 
