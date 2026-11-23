@@ -1,0 +1,92 @@
+/* 図「光の混合」の専用スタイル。共通の部品は css/base.css にある。
+   色は、色見本（--swatch）だけに出る。ほかはグレーの濃淡。 */
+
+.cone-mix__lead { margin: 0 0 var(--s-3); }
+
+/* L・M・S を区別するグレー（横棒） */
+figure.widget[data-widget="cone-mix"] {
+  --cone-L: #1f1f1f;
+  --cone-M: #555555;
+  --cone-S: #858585;
+}
+
+.cone-mix__light-swatch { width: 72px; height: 72px; border-radius: var(--radius); }
+
+/* --- 横棒 ----------------------------------------------------------------- */
+
+.cone-mix__bars { display: grid; gap: 0; margin-block: var(--s-3); }
+.cone-mix__bar {
+  display: grid;
+  grid-template-columns: 1.6em minmax(0, 1fr) 3em;
+  align-items: center;
+  gap: var(--s-3);
+}
+.cone-mix__cone { font-weight: 700; font-size: 1.05rem; text-align: center; }
+.cone-mix__track {
+  position: relative;
+  height: 22px;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-line-strong);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.cone-mix__fill { height: 100%; width: 0; background: var(--bar, var(--cone-L)); }
+.cone-mix__bar--L { --bar: var(--cone-L); }
+.cone-mix__bar--M { --bar: var(--cone-M); }
+.cone-mix__bar--S { --bar: var(--cone-S); }
+.cone-mix__value { min-width: 2.6em; font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; font-size: 0.95rem; }
+
+.cone-mix__pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--s-3);
+  margin-block: var(--s-3);
+}
+.cone-mix__card {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+}
+.cone-mix__card-title { margin: 0; font-weight: 700; font-size: 0.95rem; line-height: 1.5; }
+.cone-mix__card-text { margin: 0; font-size: 0.875rem; color: var(--c-text-2); }
+
+.cone-mix__bar--yellow { margin-top: var(--s-3); }
+.cone-mix__bar--yellow:first-child { margin-top: 0; }
+.cone-mix__bar--mix { margin-top: 3px; }
+.cone-mix__cone { align-self: start; }
+.cone-mix__bar--mix .cone-mix__fill {
+  background: repeating-linear-gradient(135deg, var(--bar) 0 4px, #fff 4px 7px);
+}
+.cone-mix__bar--mix .cone-mix__track { border-color: var(--bar); }
+
+/* 目盛り（0・0.5・1）。トラックの位置に合わせる */
+.cone-mix__track {
+  background-image: linear-gradient(to right, transparent calc(100% * 0.5 / 1.4 - 1px), var(--c-line) 0 calc(100% * 0.5 / 1.4), transparent 0),
+                    linear-gradient(to right, transparent calc(100% / 1.4 - 1px), var(--c-line-strong) 0 calc(100% / 1.4), transparent 0);
+}
+.cone-mix__axis {
+  position: relative;
+  height: 1.6em;
+  margin-top: 2px;
+  margin-left: calc(1.6em + var(--s-3));
+  margin-right: calc(3em + var(--s-3));
+  font-size: 0.8125rem;
+  color: var(--c-text-2);
+}
+.cone-mix__axis span { position: absolute; top: 0; transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+
+.cone-mix__key {
+  display: inline-block;
+  width: 1.8em;
+  height: 0.9em;
+  border: 1px solid var(--cone-L);
+  background: var(--cone-L);
+}
+.cone-mix__key--mix { background: repeating-linear-gradient(135deg, var(--cone-L) 0 3px, #fff 3px 6px); }
+
+.cone-mix__diff { margin: var(--s-2) 0 var(--s-3); font-size: 0.875rem; color: var(--c-text-2); font-variant-numeric: tabular-nums; }
+.cone-mix__status { margin: 0; }

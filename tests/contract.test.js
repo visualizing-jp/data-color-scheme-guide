@@ -67,7 +67,7 @@ test('data/prefectures.json はスキーマと整合している', async () => {
 
 // 図のモジュールは、ブラウザ専用のコード（document など）を import 時に実行することがあるので、
 // Node では import せず、ソースの中に mount の export があるかを調べる。
-const WIDGETS = ['intro-compare', 'cone-explorer', 'three-knobs', 'scheme-matrix', 'scheme-anatomy',
+const WIDGETS = ['intro-compare', 'cone-explorer', 'cone-mix', 'three-knobs', 'scheme-matrix', 'scheme-anatomy',
   'cvd-simulator', 'problem-pairs', 'decision-flow', 'quiz'];
 
 /** コメントを取り除く（簡易。文字列の中の // は壊すが、export の検査には影響しない）。 */

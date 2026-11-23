@@ -2,7 +2,6 @@
    色は、スペクトルの帯と色見本（--swatch）だけに出る。ほかはグレーの濃淡。 */
 
 .cone-explorer__lead { margin: 0 0 var(--s-3); }
-.cone-explorer__part2 { margin-top: var(--s-6); padding-top: var(--s-5); border-top: 1px solid var(--c-line); }
 
 /* L・M・S を区別するグレーと線種（曲線・横棒で共通） */
 figure.widget[data-widget="cone-explorer"] {
@@ -11,7 +10,7 @@ figure.widget[data-widget="cone-explorer"] {
   --cone-S: #858585;
 }
 
-/* --- 第1部：スペクトルの帯と曲線 ----------------------------------------- */
+/* --- スペクトルの帯と曲線 ----------------------------------------- */
 
 .cone-explorer__top {
   display: flex;
@@ -61,17 +60,15 @@ figure.widget[data-widget="cone-explorer"] {
 
 .cone-explorer__hint { margin: var(--s-2) 0 0; font-size: 0.875rem; line-height: 1.7; color: var(--c-text-3); }
 
-/* --- 横棒（第1部・第2部で共通） ------------------------------------------ */
+/* --- 横棒 ------------------------------------------ */
 
 .cone-explorer__bars { display: grid; gap: var(--s-2); margin-block: var(--s-3); }
 .cone-explorer__bar {
   display: grid;
-  grid-template-columns: 1.6em minmax(0, 1fr) 3em;
+  grid-template-columns: 1.6em minmax(0, 1fr) 9.5em; /* 数値の横に、やさしい言葉を添える */
   align-items: center;
   gap: var(--s-3);
 }
-/* 第1部は、数値の横にやさしい言葉を添える */
-.cone-explorer__bars:not(.cone-explorer__compare) .cone-explorer__bar { grid-template-columns: 1.6em minmax(0, 1fr) 9.5em; }
 .cone-explorer__reading { display: flex; align-items: baseline; gap: var(--s-2); white-space: nowrap; }
 .cone-explorer__cone { font-weight: 700; font-size: 1.05rem; text-align: center; }
 .cone-explorer__track {
@@ -88,61 +85,3 @@ figure.widget[data-widget="cone-explorer"] {
 .cone-explorer__bar--S { --bar: var(--cone-S); }
 .cone-explorer__value { min-width: 2.6em; font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; font-size: 0.95rem; }
 .cone-explorer__word { font-size: 0.9rem; color: var(--c-text-2); }
-
-/* --- 第2部 ---------------------------------------------------------------- */
-
-.cone-explorer__pair {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--s-3);
-  margin-block: var(--s-3);
-}
-.cone-explorer__card {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  padding: var(--s-3);
-  border: 1px solid var(--c-line);
-  border-radius: var(--radius);
-  background: var(--c-surface);
-}
-.cone-explorer__card-title { margin: 0; font-weight: 700; font-size: 0.95rem; line-height: 1.5; }
-.cone-explorer__card-text { margin: 0; font-size: 0.875rem; color: var(--c-text-2); }
-
-.cone-explorer__compare { gap: 0; }
-.cone-explorer__compare .cone-explorer__bar--yellow { margin-top: var(--s-3); }
-.cone-explorer__compare .cone-explorer__bar--yellow:first-child { margin-top: 0; }
-.cone-explorer__compare .cone-explorer__bar--mix { margin-top: 3px; }
-.cone-explorer__compare .cone-explorer__cone { align-self: start; }
-.cone-explorer__bar--mix .cone-explorer__fill {
-  background: repeating-linear-gradient(135deg, var(--bar) 0 4px, #fff 4px 7px);
-}
-.cone-explorer__bar--mix .cone-explorer__track { border-color: var(--bar); }
-
-/* 目盛り（0・0.5・1）。トラックの位置に合わせる */
-.cone-explorer__track--scaled {
-  background-image: linear-gradient(to right, transparent calc(100% * 0.5 / 1.4 - 1px), var(--c-line) 0 calc(100% * 0.5 / 1.4), transparent 0),
-                    linear-gradient(to right, transparent calc(100% / 1.4 - 1px), var(--c-line-strong) 0 calc(100% / 1.4), transparent 0);
-}
-.cone-explorer__axis {
-  position: relative;
-  height: 1.6em;
-  margin-top: 2px;
-  margin-left: calc(1.6em + var(--s-3));
-  margin-right: calc(3em + var(--s-3));
-  font-size: 0.8125rem;
-  color: var(--c-text-2);
-}
-.cone-explorer__axis span { position: absolute; top: 0; transform: translateX(-50%); font-variant-numeric: tabular-nums; }
-
-.cone-explorer__key {
-  display: inline-block;
-  width: 1.8em;
-  height: 0.9em;
-  border: 1px solid var(--cone-L);
-  background: var(--cone-L);
-}
-.cone-explorer__key--mix { background: repeating-linear-gradient(135deg, var(--cone-L) 0 3px, #fff 3px 6px); }
-
-.cone-explorer__diff { margin: var(--s-2) 0 var(--s-3); font-size: 0.875rem; color: var(--c-text-2); font-variant-numeric: tabular-nums; }
-.cone-explorer__status { margin: 0; }

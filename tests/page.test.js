@@ -7,7 +7,7 @@ const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 
 const EXPECTED = {
   ch0: ['intro-compare'],
-  ch1: ['cone-explorer'],
+  ch1: ['cone-explorer', 'cone-mix'],
   ch2: ['three-knobs'],
   ch3: ['scheme-matrix', 'scheme-anatomy'],
   ch4: ['cvd-simulator', 'problem-pairs'],
