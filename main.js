@@ -6,7 +6,7 @@
 import { loadDeps } from './lib/deps.js';
 import { mountPlaceholder } from './widgets/_placeholder.js';
 
-/** 図の契約：widgets/<名前>/index.js が export する mount(el, deps) が { destroy() } を返す。 */
+/** 図の契約：widgets/<名前>/index.js が export する mount(el, deps) は、{ destroy() } か、それを解決する Promise を返す。 */
 const instances = new Map();
 
 function showError(el, name) {

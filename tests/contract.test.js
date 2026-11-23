@@ -5,8 +5,8 @@ import { readFile } from 'node:fs/promises';
 
 const FUNCTIONS = {
   color: ['hexToRgb', 'rgbToHex', 'srgbToLinear', 'linearToSrgb', 'linearToOklab', 'oklabToLinear',
-    'hexToOklch', 'oklchToHex', 'lightness', 'toGray', 'deltaE', 'cvdMatrix', 'simulateCvd'],
-  palettes: ['list', 'get', 'isColorblindSafe'],
+    'hexToOklch', 'oklchToHex', 'maxChroma', 'lightness', 'toGray', 'deltaE', 'cvdMatrix', 'simulateCvd'],
+  palettes: ['list', 'get', 'scale', 'isColorblindSafe'],
   tilemap: ['render'],
 };
 const VALUES = { palettes: ['DEFAULTS', 'ATTRIBUTION'] };
@@ -35,6 +35,8 @@ test('data/prefectures.json はスキーマと整合している', async () => {
 
   assert.ok(data.meta && typeof data.meta.asOf === 'string' && typeof data.meta.note === 'string');
   assert.ok(Array.isArray(data.meta.sources));
+  assert.deepEqual(data.meta.units, { aged65: '%', popChange: '%' }, 'meta.units（aged65・popChange の単位は %）');
+  assert.deepEqual(data.meta.grid, { columns: 13, rows: 12 }, 'meta.grid（タイル地図は 13 列 × 12 行）');
 
   assert.deepEqual(data.regions.map((r) => r.id), REGION_IDS);
   for (const r of data.regions) assert.ok(r.name, `地方 ${r.id} に name がない`);
@@ -54,8 +56,31 @@ test('data/prefectures.json はスキーマと整合している', async () => {
     for (const key of ['aged65', 'popChange', 'x', 'y']) {
       assert.equal(typeof p[key], 'number', `${p.name}.${key} が数値でない`);
     }
+    // x は 0〜12 の整数、y は 0〜11 の整数。（同じ (x, y) の重複の検査は、確定データを作る prefectures.test.js が行う）
+    assert.ok(Number.isInteger(p.x) && p.x >= 0 && p.x < data.meta.grid.columns, `${p.name}.x が 0〜12 の整数でない`);
+    assert.ok(Number.isInteger(p.y) && p.y >= 0 && p.y < data.meta.grid.rows, `${p.name}.y が 0〜11 の整数でない`);
   }
   for (const id of regionIds) {
     assert.ok(prefs.some((p) => p.region === id), `地方 ${id} に属する都道府県がない`);
   }
 });
+
+// 図のモジュールは、ブラウザ専用のコード（document など）を import 時に実行することがあるので、
+// Node では import せず、ソースの中に mount の export があるかを調べる。
+const WIDGETS = ['intro-compare', 'cone-explorer', 'three-knobs', 'scheme-matrix', 'scheme-anatomy',
+  'cvd-simulator', 'problem-pairs', 'decision-flow', 'quiz'];
+
+/** コメントを取り除く（簡易。文字列の中の // は壊すが、export の検査には影響しない）。 */
+const stripComments = (source) => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+const EXPORTS_MOUNT = [
+  /\bexport\s+(?:async\s+)?function\s+mount\b/,
+  /\bexport\s+(?:const|let|var)\s+mount\b/,
+  /\bexport\s*\{[^}]*\bmount\b[^}]*\}/,
+];
+
+for (const name of ['_template', ...WIDGETS]) {
+  test(`widgets/${name}/index.js は mount を export している`, async () => {
+    const source = stripComments(await readFile(new URL(`../widgets/${name}/index.js`, import.meta.url), 'utf8'));
+    assert.ok(EXPORTS_MOUNT.some((re) => re.test(source)), `widgets/${name}/index.js が mount を export していない`);
+  });
+}

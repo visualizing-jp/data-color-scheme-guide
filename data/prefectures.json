@@ -1,6 +1,14 @@
 {
   "meta": {
     "asOf": "2024-10-01",
+    "units": {
+      "aged65": "%",
+      "popChange": "%"
+    },
+    "grid": {
+      "columns": 13,
+      "rows": 12
+    },
     "sources": [],
     "note": "数値と座標は仮の値（後続の作業で確定）"
   },

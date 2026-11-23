@@ -5,4 +5,5 @@
 
 .template__svg { display: block; width: 100%; height: auto; }
 
+/* viewBox の幅は表示幅に合わせてあるので、12px は画面上でもほぼ 12px（幅 390px の画面でも 11px 以上）。 */
 .template__value { font-size: 12px; fill: #4d4d4d; }

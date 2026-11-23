@@ -230,13 +230,19 @@ figure.widget > * { min-width: 0; }
 .ctl-segment {
   display: inline-flex;
   flex-wrap: wrap;
+  gap: 1px;                              /* ボタンの隙間（横も、折り返した段の間も）に背景の線色が見える */
   border: 1px solid var(--c-line-strong);
   border-radius: var(--radius);
-  background: var(--c-surface);
+  background: var(--c-line-strong);
   overflow: hidden;
 }
-.ctl-segment > label { position: relative; display: block; margin: 0; }
-.ctl-segment > label + label { border-left: 1px solid var(--c-line-strong); }
+.ctl-segment > label {
+  position: relative;
+  display: block;
+  flex: 1 1 auto;                        /* 折り返した段の余白を、各ボタンで埋める（線色の背景を見せない） */
+  margin: 0;
+  background: var(--c-surface);
+}
 .ctl-segment input[type="radio"] {
   position: absolute;
   inset: 0;

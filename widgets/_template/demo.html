@@ -19,10 +19,16 @@
 
     const el = document.getElementById('app');
     try {
-      mount(el, await loadDeps());
+      // mount は { destroy() } か、それを解決する Promise を返す。最初の描画が終わるまで待つ。
+      await mount(el, await loadDeps());
+      document.documentElement.dataset.widgetsReady = 'true'; // main.js と同じ印（スクリーンショット撮影はこれを待つ）
     } catch (error) {
       console.error(error);
-      el.textContent = `表示できませんでした：${error.message}`;
+      const box = document.createElement('div');
+      box.className = 'widget-error';
+      box.setAttribute('role', 'alert');
+      box.textContent = `図を表示できませんでした：${error.message}`;
+      el.replaceChildren(box);
     }
   </script>
 </body>
