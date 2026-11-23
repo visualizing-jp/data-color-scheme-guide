@@ -57,7 +57,22 @@
     <section id="ch3">
       <h2>データの性質とカラースキーム</h2>
       <div class="prose" data-prose="ch3">
-        <p>本文は準備中です</p>
+        <p>色を選ぶ前に、データの性質（data type。どんな種類の値か）を見ます。性質は3つで、それぞれに合うカラースキーム（color scheme。色の割り当て方）があります。</p>
+        <ul>
+          <li><strong>定性的カラースキーム（Categorical）</strong>：順序のない文字のデータ（例：性別、都道府県名）に。色相（色の種類）の違いで区別し、明度は大きく変えません。</li>
+          <li><strong>連続的カラースキーム（Sequential）</strong>：順序のあるデータ（例：五段階評価、数値）に。明度（明るさの度合い）を一方向に変えます。</li>
+          <li><strong>分岐的カラースキーム（Diverging）</strong>：ゼロなどの基準点（midpoint。増減の境目）を境に増減があるデータ（例：経済や人口の増減）に。両端に2つの色相、中央に明るい色を置きます。</li>
+        </ul>
+        <p>「データ×スキーム対応表」で、9通りの判定と理由を読んでください。</p>
+        <div class="prose-after" data-after="scheme-matrix">
+          <p>色相には順序がなく、明度には順序があります。だから、順序のないデータには色相を、順序のあるデータには明度を割り当てます。たとえば、地方区分（北海道・東北などのまとまり）に濃淡を付けると順位に見え、65歳以上人口の割合（人口に占める65歳以上の割合）に色相の違いを付けると高低が読めません。</p>
+          <p>人口増減率（人口が何%増減したか）を分岐的スキームで塗ると、ゼロが中央の色になり、2023年10月〜2024年10月に増えた東京都（+0.66%）と埼玉県（+0.01%）だけが色相の違いでひと目でわかります。連続的スキームでは、この境目が濃淡に埋もれます（<a href="https://www.stat.go.jp/data/jinsui/2024np/index.html">総務省統計局「人口推計」（2024年10月1日現在）</a>）。</p>
+          <p>次の「スキーム解剖」で、パレット（palette。選んだ色の一組）を選び、各色の明度の折れ線を見比べてください。</p>
+        </div>
+        <div class="prose-after" data-after="scheme-anatomy">
+          <p>折れ線の形は、スキームごとに違います。定性的スキームはおおむね平らで、順序を感じさせません。連続的スキームは、一方向にだけ変わる単調（monotonic）な線で、1つの色相の濃淡の単一色相（Single-hue）と、色相も変える複数色相（Multi-hue）があります。分岐的スキームは、中央が明るい山型です。パレットは<a href="https://colorbrewer2.org/">ColorBrewer</a>のものです。</p>
+          <p>この章を読み終えると、次のように言えます。「データに順序があるか、基準点があるかを見て、定性的・連続的・分岐的のどのカラースキームを使うかを選べる。」ここまでは、誰にでも同じ色が見えている前提でした。ところが、色の見え方は、実は人によって違います。</p>
+        </div>
       </div>
       <figure class="widget" data-widget="scheme-matrix"></figure>
       <figure class="widget" data-widget="scheme-anatomy"></figure>
@@ -66,7 +81,26 @@
     <section id="ch4">
       <h2>色覚の多様性への配慮</h2>
       <div class="prose" data-prose="ch4">
-        <p>本文は準備中です</p>
+        <p>色の見え方は、人によって違います。これを色覚の多様性（color vision diversity）といいます。色を感じる錐体（細胞）の働きが人によって違うためで、多数派の見え方は一般色覚（C型）といいます。</p>
+        <p>色の見え方が多数派と異なる人たちは、スライドでは『色弱・色盲』と呼ばれてきました。ここでは、カラーユニバーサルデザイン機構（CUDO）の呼称にならい、P型・D型・T型と書きます。P型はL錐体、D型はM錐体、T型はS錐体の働きの違いに関わります（<a href="https://www.cudo.jp/?page_id=84">CUDOの呼称</a>）。</p>
+        <p>日本では、先天的な色の見え方の違いが、男子の約5%（20人に1人）、女子の約0.2%（500人に1人）にみられます（<a href="https://www.gankaikai.or.jp/info/20131024_colorvision.pdf">日本眼科学会・日本眼科医会の要望書</a>、2013年10月24日）。「色覚シミュレータ」で、通常・P型・D型・T型と強さを切り替え、色相環や地図の見え方の変化を確かめてください。</p>
+        <div class="prose-after" data-after="cvd-simulator">
+          <p>色覚シミュレーション（color vision simulation。見え方の計算による再現）は、<a href="https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html">Machado、Oliveira、Fernandes（2009）の方法</a>による目安で、実際の見え方には個人差があります。</p>
+          <p>読み取りにくくなりやすいのは、色相は違うのに明度が同じ（同明度、equiluminance）の組み合わせです。代表は「赤と緑」「オレンジと緑」「黄色とピンク」「青と緑」です（<a href="https://www.datawrapper.de/blog/colorblind-check/">Datawrapper</a>）。これらの色のいずれかを、同じ明度のグレーの上に置くのも同じです。「見分けにくい色の組」で、明度差のスライダーを動かし、見分けられるようになる様子を見てください。</p>
+        </div>
+        <div class="prose-after" data-after="problem-pairs">
+          <p>直し方は、色を暗くするか明るくして、明度に差をつけることです。地図で分岐的スキームを使うときは、上の組み合わせを避けます。スキーム別の結論は次のとおりです（講義スライドより）。</p>
+          <ul>
+            <li><strong>定性的スキーム</strong>：取り扱い注意です。</li>
+            <li><strong>連続的スキーム</strong>：そもそも明度で色を分けているので、このままでOKです。</li>
+            <li><strong>分岐的スキーム</strong>：2つの色相が、見分けにくい組み合わせでなければOKです。</li>
+          </ul>
+          <aside class="note">
+            <p>ColorBrewerの定性的パレット8種類には、8色で色覚安全とされているものが1つもありません（地方区分は8区分です）。「色覚シミュレータ」で、色覚に配慮した<a href="https://jfly.uni-koeln.de/color/">Okabe–Ito（岡部正隆・伊藤啓）の8色</a>に切り替えて比べられます。</p>
+          </aside>
+          <p>色だけに頼らず、ラベルや形などの手がかり（redundant encoding）を併用すると、さらに伝わります。</p>
+          <p>この章を読み終えると、次のように言えます。「色覚には多様性があり、同じ明るさの色の組み合わせを避ければ、見え方が違う人にも伝わる配色にできる。」これで、順序と基準点、そして見え方の違いという材料が揃いました。最後に、自分で選べるか確かめましょう。</p>
+        </div>
       </div>
       <figure class="widget" data-widget="cvd-simulator"></figure>
       <figure class="widget" data-widget="problem-pairs"></figure>
@@ -75,7 +109,15 @@
     <section id="ch5">
       <h2>まとめ：自分で選ぶ</h2>
       <div class="prose" data-prose="ch5">
-        <p>本文は準備中です</p>
+        <p>ここまでの材料で、配色はデータを見て2つの問いに答えるだけで決まります。1つ目は「順序はある？」で、ないなら定性的スキームです。あるなら、2つ目の「基準点はある？」に進みます。基準点があれば分岐的スキーム、なければ連続的スキームです。</p>
+        <p>3つのスキームの特徴は、定性的が色相の違い、連続的が明度の一方向の変化、分岐的が2つの色相と中央の明るい色です。「判断フロー」で、2つの問いに答えながら、結論までたどってみてください。</p>
+        <div class="prose-after" data-after="decision-flow">
+          <p>配色を決めたら、最後に、色覚の多様性への確認をします。グレースケール（色相と彩度を取り除き、明度だけで表した濃淡）にして、明度の差で区別できるか見ます。「色覚シミュレータ」で、P型・D型・T型の見え方も確かめます。どの見え方でも読み取れれば、配色の確認は一区切りです。</p>
+          <p>ここまでの内容を、「理解度クイズ」（5問）で確認しましょう。</p>
+        </div>
+        <div class="prose-after" data-after="quiz">
+          <p>この章を読み終えると、次のように言えます。「データを見て『順序はある？』『基準点はある？』と問い、配色を自分で選べる。」次に色を選ぶときは、色を見る前に、まずデータを見てください。</p>
+        </div>
       </div>
       <figure class="widget" data-widget="decision-flow"></figure>
       <figure class="widget" data-widget="quiz"></figure>
@@ -84,7 +126,37 @@
     <section id="sources">
       <h2>出典</h2>
       <div class="prose" data-prose="sources">
-        <p>本文は準備中です</p>
+        <h3>都道府県のデータ</h3>
+        <ul>
+          <li>総務省統計局「<a href="https://www.stat.go.jp/data/jinsui/2024np/index.html">人口推計（2024年（令和6年）10月1日現在）</a>」：公共データ利用規約に基づき利用。数値は「結果の概要」の表から転記しました。</li>
+        </ul>
+        <h3>色が見えるしくみ・色の計算</h3>
+        <ul>
+          <li>錐体の感度：Stockman, A. &amp; Sharpe, L. T. (2000) の2°錐体分光感度（<a href="http://www.cvrl.org/cones.htm">CVRL</a>）。データは Python パッケージ <a href="https://github.com/colour-science/colour">colour-science</a> の収録値を使いました。</li>
+          <li>OKLab／OKLCH：Björn Ottosson「<a href="https://bottosson.github.io/posts/oklab/">A perceptual color space for image processing</a>」、<a href="https://www.w3.org/TR/css-color-4/">W3C CSS Color Module Level 4</a>。</li>
+          <li>マンセル表色系：JIS Z 8721:1993「色の表示方法―三属性による表示」（<a href="https://webdesk.jsa.or.jp/books/W11M0090/index/?bunsyo_id=JIS+Z+8721%3A1993">日本規格協会 JSA Group Webdesk</a>）。</li>
+        </ul>
+        <h3>パレット</h3>
+        <ul>
+          <li><a href="https://colorbrewer2.org/">ColorBrewer</a>：Cynthia Brewer、Mark Harrower、ペンシルベニア州立大学。Apache License 2.0。</li>
+          <li><a href="https://jfly.uni-koeln.de/color/">Okabe &amp; Ito（岡部正隆・伊藤啓）のカラーユニバーサルデザインの8色</a>：RGB値は Wong, B. (2011) "Points of view: Color blindness", Nature Methods 8, 441 の図と照合しました。</li>
+        </ul>
+        <h3>色覚の多様性</h3>
+        <ul>
+          <li>色覚シミュレーション：<a href="https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html">Machado, Oliveira, Fernandes (2009)</a>。行列を適用する色空間は論文に明記がなく、このページでは線形RGBに適用しています。</li>
+          <li>色覚の呼称：<a href="https://www.cudo.jp/?page_id=84">カラーユニバーサルデザイン機構（CUDO）</a>。</li>
+          <li>日本での割合：日本眼科学会・日本眼科医会の要望書（日眼医学保発第30号、2013年10月24日）（<a href="https://www.gankaikai.or.jp/info/20131024_colorvision.pdf">日本眼科医会掲載のPDF</a>、<a href="https://www.mext.go.jp/b_menu/shingi/chousa/sports/013/attach/__icsFiles/afieldfile/2013/11/20/1341565_01.pdf">文部科学省掲載の別添</a>）。</li>
+          <li>見分けにくい色の組：Gregor Aisch（Datawrapper、2018年）「<a href="https://www.datawrapper.de/blog/colorblind-check/">colorblind-check</a>」。</li>
+        </ul>
+        <h3>着想元</h3>
+        <ul>
+          <li>講義スライド「データの性質を表現する色の考え方」。</li>
+          <li>動画 "<a href="https://www.youtube.com/watch?v=poL7nDmqjmk">The Science of Color Perception</a>"（Calder Ruhl Hansen）。</li>
+        </ul>
+        <h3>描画ライブラリ</h3>
+        <ul>
+          <li><a href="https://d3js.org/">D3</a>：ISC License。</li>
+        </ul>
       </div>
     </section>
   </main>
