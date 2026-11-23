@@ -10,8 +10,8 @@ const RESULTS = {
   neg: {
     name: '定性的スキーム',
     colors: ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854'],
-    desc: '色相の違いで区別します。',
-    example: '性別、都道府県名',
+    desc: '色相の違いで区別します。色で区別できるのは、8色程度までです。',
+    example: '性別、地方区分、業種',
     care: '取り扱い注意（色だけに頼らず、ラベルや形も使う）',
     cond: '問い1が「いいえ」のとき：',
     sentence: '順序がないデータです。定性的スキームが合います。',
@@ -29,7 +29,7 @@ const RESULTS = {
     name: '分岐的スキーム',
     colors: ['#ca0020', '#f4a582', '#f7f7f7', '#92c5de', '#0571b0'],
     desc: '2つの色相を両端に置き、基準点を中央の淡い色にします。',
-    example: '人口の増減率、前年との差',
+    example: '人口の増減率、前年との差、平均との差',
     care: '2つの色相が、見分けにくい組み合わせ（赤と緑など）でなければOK',
     cond: '問い2が「はい」のとき：',
     sentence: '順序があり、基準点もあるデータです。分岐的スキームが合います。',
@@ -178,10 +178,10 @@ export async function mount(el, { d3 }) {
   ]);
 
   const answerEl = h('p', { class: 'decision-flow__answer', 'aria-live': 'polite' }, INITIAL_MESSAGE);
-  const resetButton = h('button', { type: 'button', class: 'decision-flow__reset' }, '最初から');
+  const resetButton = h('button', { type: 'button', class: 'ctl-button' }, '最初から');
 
   el.replaceChildren(
-    h('p', { class: 'fig-title' }, 'データを見て、スキームを選ぶ'),
+    h('p', { class: 'fig-title' }, '判断フロー：データを見て、スキームを選ぶ'),
     tree,
     answerEl,
     h('div', { class: 'ctl' }, resetButton),
@@ -255,7 +255,7 @@ export async function mount(el, { d3 }) {
   }
 
   // --- 状態の反映 -------------------------------------------------------
-  function apply() {
+  function apply(message) {
     const s = statesFor(answers);
     edgeStates = s.edges;
     for (const [id, state] of Object.entries(s.nodes)) nodeEls[id].dataset.state = state;
@@ -265,7 +265,9 @@ export async function mount(el, { d3 }) {
     for (const input of radios.q2) input.disabled = q2Locked;
     nodeEls.q2.toggleAttribute('data-locked', q2Locked);
     for (const id of ['q1', 'q2']) for (const input of radios[id]) input.checked = answers[id] === input.value;
-    answerEl.textContent = s.message;
+    // aria-live の領域は、文が変わったときだけ書き換える
+    const text = message ?? s.message;
+    if (answerEl.textContent !== text) answerEl.textContent = text;
     draw();
   }
 
@@ -279,10 +281,10 @@ export async function mount(el, { d3 }) {
     apply();
   };
   const onReset = () => {
+    const answered = answers.q1 !== null;
     answers.q1 = null;
     answers.q2 = null;
-    apply();
-    answerEl.textContent = RESET_MESSAGE;
+    apply(answered ? RESET_MESSAGE : undefined);
   };
   tree.addEventListener('change', onChange);
   resetButton.addEventListener('click', onReset);

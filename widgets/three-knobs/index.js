@@ -11,6 +11,7 @@ const floor3 = (x) => Math.floor(x * 1000) / 1000;
 const MSG_GRAY = '色相と彩度が消えて、明度だけが残りました。色相の帯は見分けられなくなり、明度の帯は順序が残っています。';
 const MSG_INIT = '「グレースケールにする」を入れると、色相と彩度が消えて、明度だけが残ります。';
 const MSG_COLOR = '色に戻しました。色相の帯は12色が見分けられ、明度の帯は順序があります。';
+const MSG_OUT_OF_GAMUT = '画面で表示できない色相は、彩度を下げて表示しています。';
 
 /**
  * @param {HTMLElement} el
@@ -48,6 +49,7 @@ export function mount(el, { color }) {
   const bandEl = (cls, label, cells) => h('ul', { class: `three-knobs__band ${cls}`, 'aria-label': label },
     cells.map((c) => h('li', { class: 'three-knobs__cell' }, [c.chip, c.label, c.sr])));
   const hueSpread = h('small');
+  const hueNote = h('p', { class: 'three-knobs__comment three-knobs__note' });
 
   const yellowChip = h('span', { class: 'three-knobs__chip', role: 'img' });
   const blueChip = h('span', { class: 'three-knobs__chip', role: 'img' });
@@ -58,7 +60,7 @@ export function mount(el, { color }) {
   const limitNote = h('p', { class: 'fig-note' });
 
   el.replaceChildren(
-    h('p', { class: 'fig-title' }, '3つのつまみで色を作る'),
+    h('p', { class: 'fig-title' }, '色の3つのつまみ：色相・彩度・明度で色を作る'),
     h('div', { class: 'ctl' }, [
       h('div', { class: 'ctl-slider' }, [h('label', { for: hueId }, '色相'), hueIn, hueOut]),
       h('div', { class: 'ctl-slider' }, [h('label', { for: chromaId }, '彩度'), chromaIn, chromaOut]),
@@ -76,9 +78,10 @@ export function mount(el, { color }) {
       ]),
     ]),
     h('div', { class: 'three-knobs__section' }, [
-      h('p', { class: 'three-knobs__heading' }, '色相だけを変えた12色'),
+      h('p', { class: 'three-knobs__heading' }, '色相だけを変えた12色（色相環を帯に伸ばしたもの）'),
       bandEl('three-knobs__band--hue', '色相だけを変えた12色', hueCells),
       h('p', { class: 'three-knobs__comment' }, ['明度は同じ。どれが上、という順序はありません。', ' ', hueSpread]),
+      hueNote,
     ]),
     h('div', { class: 'three-knobs__section' }, [
       h('p', { class: 'three-knobs__heading' }, '明度だけを変えた7色'),
@@ -124,7 +127,7 @@ export function mount(el, { color }) {
     lightVal.textContent = pct(color.lightness(hex));
     hueOut.textContent = `${state.h}°`;
     chromaOut.textContent = state.c.toFixed(3);
-    limitNote.textContent = `彩度の上限は、いまの色相と明度では ${max.toFixed(3)} です。`;
+    limitNote.textContent = `画面で表示できる彩度の上限は、いまの色相と明度では ${max.toFixed(3)} です。`;
     lightOut.textContent = pct(state.l);
     chromaIn.setAttribute('aria-valuetext', `${state.c.toFixed(3)}、上限 ${max.toFixed(3)}`);
 
@@ -133,6 +136,12 @@ export function mount(el, { color }) {
       setCell(hueCells[i], hx, `${hue}°`, `色相${hue}°`);
       return hx;
     });
+    // 帯の下の一言：白・黒に固定される場合と、その色相では出せない彩度が自動で下がった場合
+    const clamped = HUE_STEPS.some((hue) => color.maxChroma(state.l, hue) < state.c - 1e-9);
+    if (state.l >= 1) hueNote.textContent = '明度が100%では、どの色相も白になります。';
+    else if (state.l <= 0) hueNote.textContent = '明度が0%では、どの色相も黒になります。';
+    else hueNote.textContent = clamped && !state.gray ? MSG_OUT_OF_GAMUT : '';
+    hueNote.hidden = hueNote.textContent === '';
     const ls = hueHexes.map((hx) => color.lightness(shown(hx)));
     const spread = Math.max(...ls) - Math.min(...ls);
     hueSpread.textContent = `（12色の明度の差：${(spread * 100).toFixed(1)}%）`;
@@ -158,7 +167,9 @@ export function mount(el, { color }) {
   const onGray = () => {
     state.gray = grayIn.checked;
     render();
-    status.textContent = state.gray ? MSG_GRAY : MSG_COLOR;
+    // aria-live の領域は、このトグルを切り替えたときだけ（文が変わるときだけ）書き換える
+    const message = state.gray ? MSG_GRAY : MSG_COLOR;
+    if (status.textContent !== message) status.textContent = message;
   };
   hueIn.addEventListener('input', onHue);
   chromaIn.addEventListener('input', onChroma);

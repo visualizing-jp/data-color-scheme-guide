@@ -124,19 +124,6 @@
   line-height: 1.7;
 }
 
-.decision-flow__reset {
-  min-height: 40px;
-  padding: 0.45em 1.2em;
-  border: 1px solid var(--c-line-strong);
-  border-radius: var(--radius);
-  background: var(--c-surface);
-  color: var(--c-text);
-  font: inherit;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-.decision-flow__reset:hover { background: var(--c-surface-2); }
-
 @media (prefers-reduced-motion: reduce) {
   .decision-flow__node { transition: none; }
 }
