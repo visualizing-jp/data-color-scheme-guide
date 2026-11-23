@@ -28,8 +28,7 @@
   --s-7: 64px;
 
   /* 幅 */
-  --w-prose: 720px;
-  --w-fig: 960px;
+  --w-fig: 960px;            /* 本文・見出し・図で共通の幅（縦の線をそろえる） */
   --gutter: 16px;
 
   --radius: 6px;
@@ -93,7 +92,7 @@ a:hover { text-decoration-thickness: 2px; }
 .page > section > h2,
 .prose,
 .prose-after {
-  max-width: var(--w-prose);
+  max-width: var(--w-fig);
   margin-inline: auto;
 }
 
@@ -149,6 +148,11 @@ aside.note {
 aside.note > :last-child { margin-bottom: 0; }
 aside.note p { margin: 0 0 0.8em; }
 aside.note ul { margin: 0 0 0.8em; padding-left: 1.4em; }
+
+/* 本文の幅が図と同じになり、1行が長くなる広い画面では、行間を少し広げる。 */
+@media (min-width: 601px) {
+  .prose, .prose-after { line-height: 1.95; }
+}
 
 /* --- 図（ウィジェット）の枠 --------------------------------------------- */
 
