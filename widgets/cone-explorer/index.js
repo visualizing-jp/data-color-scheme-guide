@@ -137,7 +137,7 @@ export async function mount(el, { d3 }) {
       ]),
     ]),
     h('p', { class: 'cone-explorer__hint' },
-      'L・M・Sは、反応しやすい波長が長め（Long）・中くらい（Middle）・短め（Short）の錐体です。曲線の高さは各錐体の感度で、最大を1にそろえています。縦の細線は、その錐体の感度が最大になる波長です。'),
+      'L・M・Sは、反応しやすい波長が長め（Long）・中くらい（Medium）・短め（Short）の錐体です。曲線の高さは各錐体の感度で、最大を1にそろえています。縦の細線は、その錐体の感度が最大になる波長です。'),
     h('div', { class: 'ctl' },
       h('div', { class: 'ctl-slider' }, [h('label', { for: wlId }, '波長'), wlSlider, wlOutput])),
     h('div', { class: 'cone-explorer__bars', role: 'group', 'aria-label': 'この波長の光に対する錐体の反応量' },
