@@ -4,7 +4,7 @@
 .scheme-matrix__field { display: grid; gap: var(--s-1); min-width: 0; }
 .scheme-matrix__field-label { font-size: 0.875rem; font-weight: 700; color: var(--c-text-2); }
 
-/* 本文の並び：一覧 → 地図・凡例 → 判定。広い幅では、左に一覧と判定、右に地図を置く。 */
+/* 本文の並び（index.js の並びと同じ）：一覧 → 判定と理由 → 地図・凡例。広い幅では、左に一覧と判定、右に地図を置く。 */
 .scheme-matrix__body { display: grid; gap: var(--s-4); margin-top: var(--s-3); }
 .scheme-matrix__body > * { min-width: 0; }
 @media (min-width: 992px) {
@@ -43,17 +43,10 @@
   padding: var(--s-1) 2px;
   overflow-wrap: normal;     /* 「誤読を招く」を途中で折り返さない */
   word-break: keep-all;
-  border: 1px solid var(--c-line-strong);
-  border-radius: var(--radius);
-  background: var(--c-surface);
-  color: var(--c-text);
-  font: inherit;
   font-size: 0.8125rem;
   line-height: 1.35;
   text-align: center;
-  cursor: pointer;
 }
-.scheme-matrix__cell:hover { background: var(--c-surface-2); }
 /* いま選んでいる組み合わせ：太い枠（内側に描くので、大きさは変わらない） */
 .scheme-matrix__cell[aria-pressed="true"] {
   background: var(--c-surface-2);
@@ -65,7 +58,6 @@
 /* 地図 */
 .scheme-matrix__map { max-width: 520px; margin-inline: auto; }
 .scheme-matrix__mapwrap { min-width: 0; }
-.scheme-matrix__map rect[tabindex]:focus { outline: none; }
 .scheme-matrix__info {
   min-height: 3.2em;        /* 文言が1行でも2行でも、下の凡例が動かないようにする */
   margin: var(--s-2) 0 0;
